@@ -1,0 +1,68 @@
+import type { ComponentDef } from "@/types/schema";
+
+/* ---- 共享字段 ---- */
+const COLOR_OPTIONS = ["#6366f1", "#ec4899", "#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#f97316", "#14b8a6"];
+const textField = { key: "text", label: "文本", type: "string" as const, bucket: "base" as const };
+const colorField = { key: "color", label: "主题色", type: "select" as const, options: COLOR_OPTIONS, default: "#6366f1", bucket: "custom" as const };
+const speedField = { key: "speed", label: "动画速度", type: "number" as const, default: 1, bucket: "custom" as const };
+
+/** Aceternity UI pack 的 curated 组件定义 */
+export const aceternityDefs: ComponentDef[] = [
+  { source: "pack", id: "ac-hover-border-gradient", label: "渐变边框按钮", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-background-beams", label: "背景光束", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-card-spotlight", label: "深色聚光灯卡", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-text-generate", label: "文字渐显效果", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-meteors", label: "流星背景", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-lamp-effect", label: "灯光扫射", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-aurora", label: "极光背景", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-glowing-stars", label: "闪烁星星", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-wavy-bg", label: "波浪背景", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-sparkles", label: "闪光粒子", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-gradient-btn", label: "渐变按钮", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-text-reveal", label: "文字揭示", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-card-3d", label: "3D卡片", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-infinite-moving", label: "无限滚动", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-shooting-stars", label: "流星雨", category: "Aceternity UI", pack: "aceternity", propsSchema: [colorField, speedField] },
+  { source: "pack", id: "ac-tooltip", label: "动画提示", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-focus-cards", label: "聚焦卡片", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-tracing-beam", label: "追踪光束", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-hero-highlight", label: "英雄高亮", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-vortex", label: "漩涡", category: "Aceternity UI", pack: "aceternity", propsSchema: [colorField, speedField] },
+  { source: "pack", id: "ac-grid-pattern", label: "网格图案", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-dot-pattern", label: "点阵图案", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-gradient-border", label: "渐变边框", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-shimmer", label: "微光加载", category: "Aceternity UI", pack: "aceternity", propsSchema: [colorField, speedField] },
+  { source: "pack", id: "ac-typewriter", label: "打字机", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-floating-btn", label: "浮动按钮", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-neon-glow", label: "霓虹发光", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-pulse-ring", label: "脉冲环", category: "Aceternity UI", pack: "aceternity", propsSchema: [colorField, speedField] },
+  { source: "pack", id: "ac-cursor", label: "动画光标", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-stagger-cards", label: "层叠卡片", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-timeline", label: "动画时间线", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-bento-grid", label: "Bento网格", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-flip-words", label: "翻转词语", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-mac-os-dock", label: "Mac Dock", category: "Aceternity UI", pack: "aceternity", propsSchema: [colorField] },
+  { source: "pack", id: "ac-animated-modal", label: "动画弹窗", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-direction-aware", label: "方向感知卡片", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-particles-bg", label: "粒子背景", category: "Aceternity UI", pack: "aceternity", propsSchema: [colorField, speedField] },
+  { source: "pack", id: "ac-text-pressure", label: "压力文字", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-card-stack", label: "卡片堆叠", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-comparison-slider", label: "对比滑块", category: "Aceternity UI", pack: "aceternity", propsSchema: [colorField] },
+  { source: "pack", id: "ac-animated-tabs", label: "动画标签", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-marquee-3d", label: "3D跑马灯", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-glowing-btn", label: "发光按钮", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-scroll-reveal", label: "滚动揭示", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-animated-counter", label: "动画计数器", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-gradient-mesh", label: "渐变网格", category: "Aceternity UI", pack: "aceternity", propsSchema: [colorField, speedField] },
+  /* ---- 新增组件 ---- */
+  { source: "pack", id: "ac-spotlight-hero", label: "聚光英雄区", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-animated-badge", label: "动画徽章", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-glass-card", label: "玻璃卡片", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-morphing-blob", label: "变形气泡", category: "Aceternity UI", pack: "aceternity", propsSchema: [colorField, speedField] },
+  { source: "pack", id: "ac-text-shadow", label: "文字阴影", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-animated-progress", label: "动画进度条", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+  { source: "pack", id: "ac-hover-glow-card", label: "悬停发光卡", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
+  { source: "pack", id: "ac-wave-text-anim", label: "波浪文字动画", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
+];
+
+export { aceternityComponents } from "./components";

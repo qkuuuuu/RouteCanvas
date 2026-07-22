@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "routecanvas": {
+      "command": "node",
+      "args": ["mcp/dist/index.js"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "ROUTECANVAS_FILE": "${workspaceFolder}/canvas.json"
+      }
+    }
+  }
+}

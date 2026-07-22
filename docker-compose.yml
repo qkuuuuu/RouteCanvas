@@ -1,0 +1,12 @@
+services:
+  routecanvas:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_CLOUD_API: ${CLOUD_API:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    volumes:
+      - routecanvas-data:/data
+volumes:
+  routecanvas-data:

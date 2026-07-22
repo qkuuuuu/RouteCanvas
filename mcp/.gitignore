@@ -1,0 +1,6 @@
+# MCP 构建产物
+mcp/dist/
+mcp/node_modules/
+
+# 画布数据文件（MCP 共享介质，本地生成）
+canvas.json

@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "routecanvas": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["mcp/dist/index.js"],
+      "env": {
+        "ROUTECANVAS_FILE": "./canvas.json"
+      }
+    }
+  }
+}
