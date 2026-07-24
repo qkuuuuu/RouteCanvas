@@ -20,7 +20,7 @@ const ActivityFeed: React.FC<PackComponentProps> = () => (
   <div className="w-full h-full rounded-xl border border-gray-200 bg-white p-3 flex flex-col">
     <span className="text-xs font-semibold text-gray-800 mb-2">最近活动</span>
     <div className="flex-1 space-y-2">
-      {[{ t: "用户注册", d: "2分钟前", c: "bg-blue-500" }, { t: "新订单", d: "15分钟前", c: "bg-green-500" }, { t: "系统更新", d: "1小时前", c: "bg-purple-500" }].map((item, i) => (
+      {[{ t: "用户注册", d: "2分钟前", c: "bg-indigo-500" }, { t: "新订单", d: "15分钟前", c: "bg-green-500" }, { t: "系统更新", d: "1小时前", c: "bg-purple-500" }].map((item, i) => (
         <div key={i} className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${item.c}`} />
           <span className="text-[10px] text-gray-700 flex-1">{item.t}</span>
@@ -59,8 +59,14 @@ const Sparkline: React.FC<PackComponentProps> = (props) => {
       </div>
       <div className="flex-1 flex items-end">
         <svg className="w-full h-10" viewBox="0 0 120 25" preserveAspectRatio="none">
-          <polyline points={points} fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          <polyline points={`${points} 120,25 0,25`} fill="url(#grad)" stroke="none" opacity="0.1" />
+          <defs>
+            <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <polyline points={`${points} 120,25 0,25`} fill="url(#grad)" stroke="none" />
+          <polyline points={points} fill="none" stroke="#6366f1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
     </div>
@@ -71,7 +77,7 @@ const Sparkline: React.FC<PackComponentProps> = (props) => {
 const UserStats: React.FC<PackComponentProps> = () => (
   <div className="w-full h-full rounded-xl border border-gray-200 bg-white p-3">
     <div className="flex items-center gap-2 mb-2">
-      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">U</div>
+      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">U</div>
       <div><div className="text-xs font-medium text-gray-800">活跃用户</div><div className="text-[9px] text-gray-400">实时在线</div></div>
     </div>
     <div className="flex items-end gap-3">
@@ -100,7 +106,7 @@ const RecentOrders: React.FC<PackComponentProps> = () => (
 
 /* ============ 7. 流量来源 ============ */
 const TrafficSource: React.FC<PackComponentProps> = () => {
-  const sources = [{ name: "直接访问", pct: 40, color: "bg-blue-500" }, { name: "搜索引擎", pct: 35, color: "bg-green-500" }, { name: "社交媒体", pct: 25, color: "bg-purple-500" }];
+  const sources = [{ name: "直接访问", pct: 40, color: "bg-indigo-500" }, { name: "搜索引擎", pct: 35, color: "bg-green-500" }, { name: "社交媒体", pct: 25, color: "bg-purple-500" }];
   return (
     <div className="w-full h-full rounded-xl border border-gray-200 bg-white p-3 flex flex-col">
       <span className="text-xs font-semibold text-gray-800 mb-2">流量来源</span>
@@ -126,7 +132,7 @@ const GoalTracker: React.FC<PackComponentProps> = (props) => (
     <div className="flex-1 flex items-center">
       <div className="w-full">
         <div className="h-2.5 rounded-full bg-gray-100 overflow-hidden">
-          <motion.div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-600" initial={{ width: 0 }} animate={{ width: "72%" }} transition={{ duration: 1 }} />
+          <motion.div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-indigo-600" initial={{ width: 0 }} animate={{ width: "72%" }} transition={{ duration: 1 }} />
         </div>
         <div className="flex justify-between mt-1.5 text-[8px] text-gray-400"><span>¥72,000</span><span>目标 ¥100,000</span></div>
       </div>
@@ -139,7 +145,7 @@ const TeamMembers: React.FC<PackComponentProps> = () => (
   <div className="w-full h-full rounded-xl border border-gray-200 bg-white p-3 flex flex-col">
     <span className="text-xs font-semibold text-gray-800 mb-2">团队</span>
     <div className="flex-1 space-y-1.5">
-      {[{ n: "张三", r: "前端", c: "bg-blue-500" }, { n: "李四", r: "设计", c: "bg-pink-500" }, { n: "王五", r: "后端", c: "bg-green-500" }].map((m) => (
+      {[{ n: "张三", r: "前端", c: "bg-indigo-500" }, { n: "李四", r: "设计", c: "bg-pink-500" }, { n: "王五", r: "后端", c: "bg-green-500" }].map((m) => (
         <div key={m.n} className="flex items-center gap-2">
           <div className={`w-6 h-6 rounded-full ${m.c} flex items-center justify-center text-[8px] text-white font-bold`}>{m.n[0]}</div>
           <span className="text-[10px] text-gray-700 flex-1">{m.n}</span>
@@ -209,7 +215,7 @@ const NotificationCenter: React.FC<PackComponentProps> = () => (
     <div className="flex-1 space-y-1.5">
       {[{ t: "系统维护通知", time: "10:00" }, { t: "新版本已发布", time: "09:30" }, { t: "安全更新", time: "昨天" }].map((n) => (
         <div key={n.t} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-gray-50">
-          <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+          <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
           <span className="text-[10px] text-gray-700 flex-1">{n.t}</span>
           <span className="text-[8px] text-gray-400">{n.time}</span>
         </div>
@@ -226,10 +232,10 @@ const StorageWidget: React.FC<PackComponentProps> = () => (
       <span className="text-[9px] text-gray-400">68.2 / 100 GB</span>
     </div>
     <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-      <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-purple-500" style={{ width: "68%" }} />
+      <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500" style={{ width: "68%" }} />
     </div>
     <div className="flex gap-3 mt-2">
-      {[{ l: "文档", c: "bg-blue-500" }, { l: "图片", c: "bg-green-500" }, { l: "视频", c: "bg-purple-500" }].map((s) => (
+      {[{ l: "文档", c: "bg-indigo-500" }, { l: "图片", c: "bg-green-500" }, { l: "视频", c: "bg-purple-500" }].map((s) => (
         <div key={s.l} className="flex items-center gap-1"><div className={`w-2 h-2 rounded-sm ${s.c}`} /><span className="text-[8px] text-gray-500">{s.l}</span></div>
       ))}
     </div>
@@ -244,7 +250,7 @@ const BarChart: React.FC<PackComponentProps> = (props) => {
       <span className="text-[10px] text-gray-500 mb-2">{props.text ?? "周数据"}</span>
       <div className="flex-1 flex items-end gap-1.5">
         {bars.map((h, i) => (
-          <motion.div key={i} className="flex-1 rounded-t bg-blue-500" initial={{ height: 0 }} animate={{ height: `${h}%` }} transition={{ delay: i * 0.08, duration: 0.5 }} style={{ opacity: 0.6 + (i / bars.length) * 0.4 }} />
+          <motion.div key={i} className="flex-1 rounded-t bg-indigo-500" initial={{ height: 0 }} animate={{ height: `${h}%` }} transition={{ delay: i * 0.08, duration: 0.5 }} style={{ opacity: 0.6 + (i / bars.length) * 0.4 }} />
         ))}
       </div>
       <div className="flex justify-between mt-1 text-[7px] text-gray-400"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
@@ -274,7 +280,7 @@ const ConversionFunnel: React.FC<PackComponentProps> = () => {
       {steps.map((s) => (
         <div key={s.label} className="flex items-center gap-2">
           <span className="text-[8px] text-gray-500 w-6">{s.label}</span>
-          <div className="flex-1 h-4 rounded bg-gray-100 overflow-hidden"><div className="h-full rounded bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-end pr-1" style={{ width: `${s.pct}%` }}><span className="text-[7px] text-white font-medium">{s.pct}%</span></div></div>
+          <div className="flex-1 h-4 rounded bg-gray-100 overflow-hidden"><div className="h-full rounded bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-end pr-1" style={{ width: `${s.pct}%` }}><span className="text-[7px] text-white font-medium">{s.pct}%</span></div></div>
         </div>
       ))}
     </div>
@@ -287,8 +293,8 @@ const Heatmap: React.FC<PackComponentProps> = () => (
     <span className="text-[10px] text-gray-500 mb-2">活跃度</span>
     <div className="flex-1 grid grid-cols-7 grid-rows-4 gap-0.5">
       {Array.from({ length: 28 }).map((_, i) => {
-        const intensity = Math.random();
-        return <div key={i} className="rounded-sm" style={{ background: `rgba(59,130,246,${0.1 + intensity * 0.8})` }} />;
+        const intensity = ((i * 7 + 3) % 10) / 10;
+        return <div key={i} className="rounded-sm" style={{ background: `rgba(99,102,241,${0.08 + intensity * 0.72})` }} />;
       })}
     </div>
   </div>

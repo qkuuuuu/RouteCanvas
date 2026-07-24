@@ -64,7 +64,7 @@ const Bubbles: React.FC<PackComponentProps> = (props) => (
 const MatrixRain: React.FC<PackComponentProps> = (props) => (
   <div className="relative w-full h-full overflow-hidden rounded-xl bg-black flex items-center justify-center">
     {Array.from({ length: 12 }).map((_, i) => (
-      <motion.span key={i} className="absolute text-green-500 font-mono text-[8px] writing-mode-vertical" style={{ left: `${(i * 8 + 3) % 95}%`, top: "-20%" }} animate={{ y: ["0%", "500%"] }} transition={{ duration: 2 + (i % 3), repeat: Infinity, delay: i * 0.2, ease: "linear" }}>
+      <motion.span key={i} className="absolute text-green-500 font-mono text-[8px] [writing-mode:vertical-lr]" style={{ left: `${(i * 8 + 3) % 95}%`, top: "-20%" }} animate={{ y: ["0%", "500%"] }} transition={{ duration: 2 + (i % 3), repeat: Infinity, delay: i * 0.2, ease: "linear" }}>
         {String.fromCharCode(0x30A0 + Math.random() * 96)}
       </motion.span>
     ))}

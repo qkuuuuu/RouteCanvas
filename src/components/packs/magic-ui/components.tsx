@@ -208,11 +208,11 @@ const Sparkles: React.FC<PackComponentProps> = (props) => {
 
 /* ============ 16. 文字揭示 ============ */
 const TextReveal: React.FC<PackComponentProps> = (props) => {
-  const text = props.text ?? "Reveal Effect";
+  const text = props.text ?? "揭示效果";
   return (
     <div className="w-full h-full flex items-center justify-center overflow-hidden">
       <div className="relative">
-        <span className="text-sm font-bold text-gray-300">{text}</span>
+        <span className="text-sm font-bold text-gray-900">{text}</span>
         <motion.div className="absolute inset-0 bg-white" initial={{ scaleX: 1 }} animate={{ scaleX: 0 }} transition={{ duration: 1, ease: "easeInOut" }} style={{ transformOrigin: "right" }} />
       </div>
     </div>
@@ -228,7 +228,7 @@ const Orbit: React.FC<PackComponentProps> = (props) => {
         <div className="absolute inset-0 rounded-full border border-gray-300" />
         <div className="absolute inset-3 rounded-full border border-gray-200" />
         <motion.div className="absolute w-3 h-3 rounded-full" style={{ background: color, top: -6, left: "50%", marginLeft: -6, transformOrigin: "6px 46px" }} animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }} />
-        <motion.div className="absolute w-2 h-2 rounded-full bg-pink-500" style={{ top: 6, left: "50%", marginLeft: -4 }} animate={{ rotate: -360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} />
+        <motion.div className="absolute w-2 h-2 rounded-full bg-indigo-400" style={{ top: 6, left: "50%", marginLeft: -4 }} animate={{ rotate: -360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} />
         <div className="absolute inset-0 flex items-center justify-center"><div className="w-4 h-4 rounded-full bg-gray-800" /></div>
       </div>
     </div>

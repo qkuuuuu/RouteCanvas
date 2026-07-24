@@ -4,7 +4,7 @@
  * 用户输入自然语言指令 → AI 返回结构化 operations → 实时应用到画布。
  */
 import * as React from "react";
-import { Bot, Send, Settings, Sparkles, User, X, Loader2 } from "lucide-react";
+import { Bot, Send, Settings, Sparkles, User, X, Loader2, Wand2, LayoutTemplate, LogIn } from "lucide-react";
 import { useCanvasStore } from "@/store/canvasStore";
 import { buildChatMessages } from "@/data/chatPrompt";
 import { executeOperations, parseAiResponse } from "@/data/chatOps";
@@ -15,6 +15,33 @@ interface ChatMsg {
   content: string; // 展示文本
   applied?: string[]; // 已执行的操作摘要
 }
+
+/** 快捷指令：一键触发高频高质量生成/美化诉求 */
+const QUICK_ACTIONS = [
+  {
+    icon: Wand2,
+    label: "美化当前页面",
+    prompt: `对当前页面做高级感美化（增量修改，保持文案与结构，不要删页重建）：
+1. 背景：第一个添加一个铺满整页的 abg- 动态背景或 Container 品牌渐变底（bgType=gradient），让页面告别白底；
+2. 标题：主标题改 Text variant=display（或 fontSize≥40、fontWeight≥800），可叠 gradText 品牌渐变；副标题色 #6b7280；
+3. 卡片：内容卡片外套 Container（radius=16、shadow=md）或玻璃拟态（bgType=glass、blur=16、borderWidth=1）；
+4. CTA：只保留 1 个 Button variant=primary 放视觉终点，其余改 secondary/ghost；
+5. 布局：x/y/宽/高取 8 的倍数，同区块严格左对齐或居中，消除错位；
+6. 色彩：有彩色≤3 种、色温统一，主色 #6366f1。`,
+  },
+  {
+    icon: LayoutTemplate,
+    label: "落地页骨架",
+    prompt:
+      "按设计系统的「落地页构图套路」生成一个完整的品牌落地页（800×960，scroll 模式）：Navbar → Hero（abg- 动态背景 + display 渐变标题 + 副标题 + 双按钮）→ 3 列特性卡片 → 数据背书区 → CTA 渐变横幅 → Footer。",
+  },
+  {
+    icon: LogIn,
+    label: "登录页示例",
+    prompt:
+      "做一个有高级感的登录页：abg- 动态背景或品牌渐变底，居中玻璃拟态登录卡片（Container bgType=glass），含 display 标题、用户名/密码输入框、primary 登录按钮。",
+  },
+] as const;
 
 export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [messages, setMessages] = React.useState<ChatMsg[]>([]);
@@ -35,8 +62,8 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
 
   if (!open) return null;
 
-  const send = async () => {
-    const instruction = input.trim();
+  const send = async (override?: string) => {
+    const instruction = (override ?? input).trim();
     if (!instruction || busy) return;
     setInput("");
     setBusy(true);
@@ -100,9 +127,9 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
   };
 
   return (
-    <div className="fixed right-4 bottom-4 z-50 w-96 h-[560px] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
+    <div className="fixed right-4 bottom-4 z-50 w-96 h-[560px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden">
       {/* 头部 */}
-      <div className="h-11 shrink-0 px-3 flex items-center justify-between bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+      <div className="h-11 shrink-0 px-3 flex items-center justify-between bg-gradient-to-r from-indigo-500 to-pink-500 text-white">
         <div className="flex items-center gap-2 text-sm font-semibold">
           <Sparkles size={15} /> AI 设计助手
         </div>
@@ -133,7 +160,7 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
               onChange={(e) => setApiKey(e.target.value)}
             />
             <button
-              className="px-2 py-1 rounded text-xs bg-blue-600 text-white hover:bg-blue-700"
+              className="px-2 py-1 rounded text-xs bg-indigo-500 text-white hover:bg-indigo-600"
               onClick={() => {
                 localStorage.setItem("routecanvas-openai-key", apiKey);
                 toast.success("API Key 已保存");
@@ -149,22 +176,23 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
       <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3">
         {messages.length === 0 && (
           <div className="text-center text-gray-400 text-xs mt-8 space-y-2">
-            <Bot size={28} className="mx-auto text-purple-300" />
+            <Bot size={28} className="mx-auto text-indigo-300" />
             <p>描述你想要的页面，我来帮你设计。</p>
             <p className="text-[10px]">例如：&quot;做一个登录页，有用户名、密码输入框和登录按钮&quot;</p>
+            <p className="text-[10px] text-indigo-400">也可以直接点下方「美化当前页面」一键提升颜值</p>
           </div>
         )}
         {messages.map((m, i) => (
           <div key={i} className={`flex gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
             {m.role === "assistant" && (
-              <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
-                <Bot size={13} className="text-purple-600" />
+              <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+                <Bot size={13} className="text-indigo-600" />
               </div>
             )}
             <div
               className={`max-w-[75%] rounded-lg px-3 py-2 text-xs leading-relaxed ${
                 m.role === "user"
-                  ? "bg-blue-600 text-white"
+                  ? "bg-indigo-500 text-white"
                   : "bg-gray-100 text-gray-700"
               }`}
             >
@@ -180,16 +208,16 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
               )}
             </div>
             {m.role === "user" && (
-              <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                <User size={13} className="text-blue-600" />
+              <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+                <User size={13} className="text-indigo-600" />
               </div>
             )}
           </div>
         ))}
         {busy && (
           <div className="flex gap-2">
-            <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
-              <Bot size={13} className="text-purple-600" />
+            <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+              <Bot size={13} className="text-indigo-600" />
             </div>
             <div className="bg-gray-100 rounded-lg px-3 py-2 text-xs text-gray-500 flex items-center gap-2">
               <Loader2 size={13} className="animate-spin" /> 正在设计...
@@ -200,10 +228,25 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
       </div>
 
       {/* 输入区 */}
-      <div className="p-3 border-t shrink-0">
+      <div className="p-3 border-t border-gray-100 shrink-0 space-y-2">
+        {/* 快捷指令 */}
+        <div className="flex gap-1.5 flex-wrap">
+          {QUICK_ACTIONS.map((qa) => (
+            <button
+              key={qa.label}
+              className="inline-flex items-center gap-1 h-7 px-2.5 rounded-full border border-indigo-100 bg-indigo-50/60 text-indigo-600 text-[11px] font-medium hover:bg-indigo-100 hover:border-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              onClick={() => send(qa.prompt)}
+              disabled={busy}
+              title={qa.label}
+            >
+              <qa.icon size={12} />
+              {qa.label}
+            </button>
+          ))}
+        </div>
         <div className="flex gap-2">
           <input
-            className="flex-1 h-9 rounded-lg border border-gray-300 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400"
+            className="flex-1 h-9 rounded-lg border border-gray-200 bg-gray-50/60 px-3 text-xs placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors"
             placeholder="描述你想修改或创建的内容..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -216,8 +259,8 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
             disabled={busy}
           />
           <button
-            className="w-9 h-9 rounded-lg bg-purple-600 text-white flex items-center justify-center hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-            onClick={send}
+            className="w-9 h-9 rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none shrink-0 transition-shadow"
+            onClick={() => send()}
             disabled={busy || !input.trim()}
             title="发送"
           >

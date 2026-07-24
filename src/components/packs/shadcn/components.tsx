@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Bell, Inbox, UploadCloud } from "lucide-react";
 import type { PackComponentProps } from "../react-bits/components";
 
 /* ============ 1. 命令面板 ============ */
@@ -157,7 +158,7 @@ const SkeletonCard: React.FC<PackComponentProps> = () => (
 /* ============ 11. 通知卡片 ============ */
 const NotificationCard: React.FC<PackComponentProps> = (props) => (
   <div className="w-full h-full rounded-lg border border-gray-200 bg-white shadow-sm p-3 flex gap-2.5">
-    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm shrink-0">🔔</div>
+    <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center shrink-0"><Bell size={14} className="text-indigo-500" /></div>
     <div className="flex-1 min-w-0">
       <div className="text-xs font-medium text-gray-900">{props.text ?? "新通知"}</div>
       <div className="text-[10px] text-gray-500 mt-0.5 truncate">您有一条新的消息待处理</div>
@@ -297,10 +298,10 @@ const CalendarWidget: React.FC<PackComponentProps> = () => {
 /* ============ 20. 空状态 ============ */
 const EmptyState: React.FC<PackComponentProps> = (props) => (
   <div className="w-full h-full rounded-lg border border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center gap-2 p-4">
-    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-lg">📭</div>
+    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center"><Inbox size={18} className="text-gray-400" /></div>
     <span className="text-xs font-medium text-gray-700">{props.text ?? "暂无数据"}</span>
     <span className="text-[10px] text-gray-400 text-center">这里空空如也，试试添加一些内容吧</span>
-    <button className="mt-1 px-3 py-1.5 rounded-md bg-blue-600 text-white text-[10px] font-medium hover:bg-blue-700">添加内容</button>
+    <button className="mt-1 px-3 py-1.5 rounded-md bg-gradient-to-r from-indigo-500 to-indigo-600 text-white text-[10px] font-medium shadow-md shadow-indigo-500/25">添加内容</button>
   </div>
 );
 
@@ -318,8 +319,8 @@ const RatingStars: React.FC<PackComponentProps> = () => {
 
 /* ============ 22. 文件上传 ============ */
 const FileUpload: React.FC<PackComponentProps> = (props) => (
-  <div className="w-full h-full rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center gap-2 p-4 hover:border-blue-400 transition-colors cursor-pointer">
-    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-lg">📁</div>
+  <div className="w-full h-full rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center gap-2 p-4 hover:border-indigo-400 transition-colors cursor-pointer">
+    <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center"><UploadCloud size={18} className="text-indigo-500" /></div>
     <span className="text-xs font-medium text-gray-700">{props.text ?? "点击或拖拽上传"}</span>
     <span className="text-[10px] text-gray-400">支持 PNG, JPG, PDF</span>
   </div>
@@ -332,14 +333,14 @@ const StatCard: React.FC<PackComponentProps> = (props) => (
       <span className="text-[10px] text-gray-500">{props.text ?? "总用户"}</span>
       <span className="text-green-500 text-[9px] font-medium">↑ 5.2%</span>
     </div>
-    <div className="text-xl font-bold text-gray-900 mt-1">12,847</div>
-    <div className="h-1 rounded-full bg-gray-100 mt-1.5"><div className="h-full w-3/4 rounded-full bg-blue-500" /></div>
+    <div className="text-xl font-extrabold tracking-tight text-gray-900 mt-1">{(props.value as string) ?? "12,847"}</div>
+    <div className="h-1 rounded-full bg-gray-100 mt-1.5"><div className="h-full w-3/4 rounded-full bg-gradient-to-r from-indigo-500 to-pink-500" /></div>
   </div>
 );
 
 /* ============ 24. 颜色选择器 ============ */
 const ColorPicker: React.FC<PackComponentProps> = () => {
-  const colors = ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#8b5cf6", "#ec4899"];
+  const colors = ["#ef4444", "#f59e0b", "#22c55e", "#6366f1", "#8b5cf6", "#ec4899"];
   const [sel, setSel] = React.useState(3);
   return (
     <div className="w-full h-full flex items-center justify-center gap-2">

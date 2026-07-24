@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import { motion } from "framer-motion";
+import { Folder, Globe, Camera, Music, Settings } from "lucide-react";
 import type { PackComponentProps } from "../react-bits/components";
 
 /* ---------- HoverBorderGradient ---------- */
@@ -191,9 +192,9 @@ export const WavyBackground: React.FC<PackComponentProps> = ({ text }) => (
 export const Sparkles: React.FC<PackComponentProps> = ({ text }) => (
   <div className="relative w-full h-full overflow-hidden rounded-xl bg-gray-900 flex items-center justify-center">
     {Array.from({ length: 12 }).map((_, i) => (
-      <motion.span key={i} className="absolute text-yellow-300" style={{ left: `${Math.random() * 90}%`, top: `${Math.random() * 90}%`, fontSize: 8 + Math.random() * 6 }} animate={{ opacity: [0, 1, 0], rotate: [0, 180] }} transition={{ duration: 1.5 + Math.random(), repeat: Infinity, delay: Math.random() * 2 }}>✦</motion.span>
+      <motion.span key={i} className="absolute text-indigo-300" style={{ left: `${Math.random() * 90}%`, top: `${Math.random() * 90}%`, fontSize: 8 + Math.random() * 6 }} animate={{ opacity: [0, 1, 0], rotate: [0, 180] }} transition={{ duration: 1.5 + Math.random(), repeat: Infinity, delay: Math.random() * 2 }}>✦</motion.span>
     ))}
-    <span className="relative z-10 text-sm font-semibold text-white">{text ?? "Sparkles"}</span>
+    <span className="relative z-10 text-sm font-semibold text-white">{text ?? "星光"}</span>
   </div>
 );
 
@@ -221,15 +222,15 @@ export const Card3D: React.FC<PackComponentProps> = ({ text }) => {
   const ref = React.useRef<HTMLDivElement>(null);
   const [r, setR] = React.useState({ x: 0, y: 0 });
   return (
-    <motion.div ref={ref} onMouseMove={(e) => { const rect = ref.current!.getBoundingClientRect(); setR({ x: -((e.clientY - rect.top) / rect.height - 0.5) * 20, y: ((e.clientX - rect.left) / rect.width - 0.5) * 20 }); }} onMouseLeave={() => setR({ x: 0, y: 0 })} style={{ rotateX: r.x, rotateY: r.y, transformStyle: "preserve-3d" }} className="w-full h-full rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-xl">
-      <span className="text-white text-sm font-bold">{text ?? "3D Card"}</span>
+    <motion.div ref={ref} onMouseMove={(e) => { const rect = ref.current!.getBoundingClientRect(); setR({ x: -((e.clientY - rect.top) / rect.height - 0.5) * 20, y: ((e.clientX - rect.left) / rect.width - 0.5) * 20 }); }} onMouseLeave={() => setR({ x: 0, y: 0 })} style={{ rotateX: r.x, rotateY: r.y, transformStyle: "preserve-3d" }} className="w-full h-full rounded-2xl bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center shadow-xl shadow-indigo-500/25">
+      <span className="text-white text-sm font-bold">{text ?? "3D 卡片"}</span>
     </motion.div>
   );
 };
 
 /* ---------- InfiniteMoving ---------- */
 export const InfiniteMoving: React.FC<PackComponentProps> = ({ text }) => {
-  const items = (text ?? "Aceternity UI • React • Motion • ").repeat(3);
+  const items = (text ?? "极致体验 • 匠心设计 • 持续进化 • ").repeat(3);
   return (
     <div className="w-full h-full flex items-center overflow-hidden">
       <motion.div className="whitespace-nowrap text-sm text-gray-600 font-medium" animate={{ x: ["0%", "-33.33%"] }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }}>{items}</motion.div>
@@ -279,8 +280,8 @@ export const TracingBeam: React.FC<PackComponentProps> = ({ text }) => (
 /* ---------- HeroHighlight ---------- */
 export const HeroHighlight: React.FC<PackComponentProps> = ({ text }) => (
   <div className="w-full h-full flex items-center justify-center">
-    <span className="text-sm font-bold text-gray-900">{text ?? "Highlight"}
-      <motion.span className="block h-2 -mt-2 bg-yellow-300/60 -z-10 rounded" initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.8, delay: 0.3 }} style={{ originX: 0 }} />
+    <span className="text-sm font-bold text-gray-900">{text ?? "高亮重点"}
+      <motion.span className="block h-2 -mt-2 bg-indigo-300/50 -z-10 rounded" initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.8, delay: 0.3 }} style={{ originX: 0 }} />
     </span>
   </div>
 );
@@ -400,7 +401,7 @@ export const TimelineAc: React.FC<PackComponentProps> = ({ text }) => (
     {[0, 1, 2].map((i) => (
       <motion.div key={i} className="flex items-center gap-2" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.2 }}>
         <div className="flex flex-col items-center"><div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />{i < 2 && <div className="w-px h-5 bg-gray-300" />}</div>
-        <span className="text-xs text-gray-700">{(text ?? "Step") + " " + (i + 1)}</span>
+        <span className="text-xs text-gray-700">{(text ?? "步骤") + " " + (i + 1)}</span>
       </motion.div>
     ))}
   </div>
@@ -418,12 +419,12 @@ export const BentoGrid: React.FC<PackComponentProps> = ({ text }) => (
 
 /* ---------- FlipWords ---------- */
 export const FlipWords: React.FC<PackComponentProps> = ({ text }) => {
-  const words = ["beautiful", "modern", "fast", "elegant"];
+  const words = ["优雅", "现代", "快速", "精致"];
   const [idx, setIdx] = React.useState(0);
   React.useEffect(() => { const t = setInterval(() => setIdx((p) => (p + 1) % words.length), 2000); return () => clearInterval(t); }, []);
   return (
     <div className="w-full h-full flex items-center justify-center gap-1">
-      <span className="text-sm text-gray-600">{text ?? "Make it"}</span>
+      <span className="text-sm text-gray-600">{text ?? "让它更"}</span>
       <motion.span key={idx} className="text-sm font-bold text-indigo-600" initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -10, opacity: 0 }}>{words[idx]}</motion.span>
     </div>
   );
@@ -432,9 +433,9 @@ export const FlipWords: React.FC<PackComponentProps> = ({ text }) => {
 /* ---------- MacOsDock ---------- */
 export const MacOsDock: React.FC<PackComponentProps> = () => (
   <div className="w-full h-full flex items-end justify-center pb-2">
-    <div className="flex items-end gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100/80 backdrop-blur border border-gray-200">
-      {["📁", "🌐", "📷", "🎵", "⚙️"].map((icon, i) => (
-        <motion.span key={i} className="text-lg cursor-pointer" whileHover={{ scale: 1.4, y: -6 }} transition={{ type: "spring", stiffness: 300 }}>{icon}</motion.span>
+    <div className="flex items-end gap-1.5 px-3 py-2 rounded-2xl bg-white/70 backdrop-blur-xl border border-gray-200/60 shadow-lg">
+      {[Folder, Globe, Camera, Music, Settings].map((Icon, i) => (
+        <motion.span key={i} className="text-gray-600 hover:text-indigo-600 cursor-pointer" whileHover={{ scale: 1.4, y: -6 }} transition={{ type: "spring", stiffness: 300 }}><Icon size={18} /></motion.span>
       ))}
     </div>
   </div>
@@ -507,7 +508,7 @@ export const ComparisonSlider: React.FC<PackComponentProps> = () => {
 /* ---------- AnimatedTabs ---------- */
 export const AnimatedTabs: React.FC<PackComponentProps> = () => {
   const [active, setActive] = React.useState(0);
-  const tabs = ["Home", "About", "Work"];
+  const tabs = ["首页", "关于", "作品"];
   return (
     <div className="w-full h-full flex items-center justify-center">
       <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
@@ -534,9 +535,9 @@ export const Marquee3D: React.FC<PackComponentProps> = ({ text }) => (
 /* ---------- GlowingBtn ---------- */
 export const GlowingBtn: React.FC<PackComponentProps> = ({ text, interactive, onTrigger }) => (
   <div className="w-full h-full flex items-center justify-center">
-    <motion.button className="relative px-5 py-2 rounded-full bg-gray-900 text-white text-sm font-medium overflow-hidden" whileHover="hover" onClick={interactive ? onTrigger : undefined}>
-      <motion.span className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 blur-sm" variants={{ hover: { opacity: 1 } }} />
-      <span className="relative z-10">{text ?? "Glow"}</span>
+    <motion.button className="relative px-5 py-2 rounded-full bg-gray-900 text-white text-sm font-semibold overflow-hidden" whileHover="hover" onClick={interactive ? onTrigger : undefined}>
+      <motion.span className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-60 blur-[6px]" variants={{ hover: { opacity: 1 } }} transition={{ duration: 0.3 }} />
+      <span className="relative z-10">{text ?? "辉光按钮"}</span>
     </motion.button>
   </div>
 );
@@ -550,11 +551,21 @@ export const ScrollReveal: React.FC<PackComponentProps> = ({ text }) => (
 
 /* ---------- AnimatedCounter ---------- */
 export const AnimatedCounter: React.FC<PackComponentProps> = ({ text }) => {
+  const target = Math.max(1, parseInt(text ?? "", 10) || 100);
   const [count, setCount] = React.useState(0);
-  React.useEffect(() => { const t = setInterval(() => setCount((c) => (c >= 100 ? 0 : c + 1)), 30); return () => clearInterval(t); }, []);
+  React.useEffect(() => {
+    const step = Math.max(1, Math.ceil(target / 40));
+    const t = setInterval(() => {
+      setCount((c) => {
+        if (c >= target) { clearInterval(t); return target; }
+        return Math.min(target, c + step);
+      });
+    }, 30);
+    return () => clearInterval(t);
+  }, [target]);
   return (
     <div className="w-full h-full flex items-center justify-center">
-      <span className="text-2xl font-black text-indigo-600 tabular-nums">{text ?? count}</span>
+      <span className="text-2xl font-black text-indigo-600 tabular-nums">{count.toLocaleString()}</span>
     </div>
   );
 };

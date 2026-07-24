@@ -79,8 +79,10 @@ const SYSTEM_PROMPT = `你是 RouteCanvas 设计助手。RouteCanvas 是一个�
 - 引用已存在的页面/节点时，直接使用它们的真实 id（见下方当前画布）。
 - type 必须从组件白名单中选择，不确定就用 Button/Text/Input/Card/Container。
 - 组件的文字放 props.text，颜色等放 props.custom。
-- 合理布局：节点 position 相对页面左上角，注意间距，避免重叠。
-- 移动端页面用 width:390 height:844；桌面页面用 width:800 height:600。
+- 层级顺序：zIndex 按添加顺序自动递增——整页背景（abg- 或 Container 底）必须第一个添加，装饰层其次，内容节点最后，禁止内容被背景遮挡。
+- 合理布局：节点 position 相对页面左上角，x/y/宽/高取 8 的倍数（或构图套路里的网格值如 226/21），同区块严格对齐，避免重叠。
+- 移动端页面用 width:390 height:844；桌面页面用 width:800 height:600；落地页可用更高高度（如 720/960），多屏用 scroll 连线串成连续滚动页。
+- 生成质量：严格执行下方设计系统中的「高级感铁律」「组件选型速查」与「构图套路」——页面必须有背景氛围、戏剧化大标题、带圆角阴影的卡片、唯一醒目的 CTA，而不是白底裸组件堆叠。
 - 如果用户要求"重新设计/整体生成"，可以先 remove_page 清空再重建，或直接增量修改。
 - 不要编造不存在的 nodeId/pageId。
 

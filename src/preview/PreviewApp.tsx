@@ -333,9 +333,9 @@ export default function PreviewApp() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-100 via-gray-100 to-slate-200">
       {/* 顶栏 */}
-      <header className="h-11 shrink-0 bg-white border-b border-gray-200 flex items-center gap-3 px-4">
+      <header className="h-12 shrink-0 bg-white/70 backdrop-blur-xl border-b border-gray-200/60 flex items-center gap-3 px-4">
         <button
           className="text-gray-500 hover:text-gray-800 text-sm inline-flex items-center gap-1"
           onClick={() => { window.location.href = "/"; }}
@@ -373,7 +373,7 @@ export default function PreviewApp() {
       {/* 设备框 */}
       <div className="flex-1 min-h-0 grid place-items-center p-6 overflow-auto">
         <div
-          className="bg-white shadow-lg rounded-lg overflow-auto"
+          className="bg-white rounded-2xl ring-1 ring-gray-900/5 shadow-[0_24px_70px_rgba(15,23,42,0.14)] overflow-auto"
           style={{
             width: device === "mobile" ? 390 : Math.min(page.layout.width, 1200),
             height: device === "mobile" ? 720 : Math.min(page.layout.height, 800),
@@ -413,15 +413,15 @@ export default function PreviewApp() {
 
       {/* 守卫登录占位 */}
       {showLogin && (
-        <div className="fixed inset-0 z-50 bg-black/40 grid place-items-center">
-          <div className="bg-white rounded-lg p-6 w-80 text-center">
-            <div className="text-sm font-semibold mb-2">需要登录</div>
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm grid place-items-center">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-80 text-center">
+            <div className="text-sm font-semibold text-gray-900 mb-2">需要登录</div>
             <div className="text-xs text-gray-500 mb-4">
               该跳转标记为需登录验证（预览占位，无真实鉴权）
             </div>
             <div className="flex gap-2 justify-center">
               <button
-                className="px-3 py-1.5 rounded bg-blue-600 text-white text-sm"
+                className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 text-white text-sm font-medium shadow-lg shadow-indigo-500/25"
                 onClick={() => {
                   setShowLogin(false);
                   if (pendingTarget) setActivePageId(pendingTarget);
@@ -431,7 +431,7 @@ export default function PreviewApp() {
                 模拟登录后继续
               </button>
               <button
-                className="px-3 py-1.5 rounded bg-gray-100 text-gray-700 text-sm"
+                className="px-4 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium transition-colors"
                 onClick={() => {
                   setShowLogin(false);
                   setPendingTarget(null);

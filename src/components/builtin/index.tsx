@@ -16,17 +16,20 @@ const Button: React.FC<BuiltinProps> = ({ props, interactive, onTrigger }) => {
   const variant = (props.custom?.variant as string) ?? "primary";
   const size = (props.custom?.size as string) ?? "md";
   const base =
-    "inline-flex items-center justify-center rounded-md font-medium transition-colors select-none";
+    "inline-flex items-center justify-center gap-1.5 rounded-lg font-semibold tracking-wide transition-all duration-200 select-none";
   const variants: Record<string, string> = {
-    primary: "bg-blue-600 text-white hover:bg-blue-700",
-    secondary: "bg-gray-200 text-gray-900 hover:bg-gray-300",
-    ghost: "bg-transparent text-blue-600 hover:bg-blue-50",
-    danger: "bg-red-600 text-white hover:bg-red-700",
+    primary:
+      "bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 hover:-translate-y-px active:translate-y-0",
+    secondary:
+      "bg-white text-gray-700 border border-gray-200 shadow-sm hover:bg-gray-50 hover:border-gray-300 hover:-translate-y-px",
+    ghost: "bg-transparent text-indigo-600 hover:bg-indigo-50",
+    danger:
+      "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/30 hover:-translate-y-px",
   };
   const sizes: Record<string, string> = {
-    sm: "h-8 px-3 text-sm",
-    md: "h-10 px-4 text-sm",
-    lg: "h-12 px-6 text-base",
+    sm: "h-8 px-3.5 text-[13px]",
+    md: "h-10 px-5 text-sm",
+    lg: "h-12 px-7 text-[15px]",
   };
   return (
     <motion.button
@@ -48,7 +51,7 @@ const Input: React.FC<BuiltinProps> = ({ props }) => {
       placeholder={placeholder}
       value={props.text ?? ""}
       readOnly={!props.custom?.editable}
-      className="w-full h-full rounded-md border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="w-full h-full rounded-lg border border-gray-200 bg-gray-50/60 px-3.5 text-sm text-gray-800 placeholder:text-gray-400 transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
     />
   );
 };
@@ -75,12 +78,13 @@ function num(v: unknown): number | undefined {
 const Text: React.FC<BuiltinProps> = ({ props }) => {
   const c = props.custom ?? {};
   const variant = (c.variant as string) ?? "body";
-  const presets: Record<string, { fontSize: number; fontWeight: number; color: string }> = {
-    h1: { fontSize: 30, fontWeight: 700, color: "" },
-    h2: { fontSize: 24, fontWeight: 700, color: "" },
-    h3: { fontSize: 20, fontWeight: 600, color: "" },
-    body: { fontSize: 14, fontWeight: 400, color: "" },
-    caption: { fontSize: 12, fontWeight: 400, color: "#6b7280" },
+  const presets: Record<string, { fontSize: number; fontWeight: number; color: string; lineHeight: number; tracking: number }> = {
+    display: { fontSize: 44, fontWeight: 800, color: "#0f172a", lineHeight: 1.12, tracking: -1 },
+    h1: { fontSize: 32, fontWeight: 800, color: "#111827", lineHeight: 1.2, tracking: -0.5 },
+    h2: { fontSize: 24, fontWeight: 700, color: "#111827", lineHeight: 1.3, tracking: -0.3 },
+    h3: { fontSize: 17, fontWeight: 600, color: "#1f2937", lineHeight: 1.4, tracking: 0 },
+    body: { fontSize: 14, fontWeight: 400, color: "#374151", lineHeight: 1.6, tracking: 0 },
+    caption: { fontSize: 12, fontWeight: 400, color: "#6b7280", lineHeight: 1.5, tracking: 0 },
   };
   const preset = presets[variant] ?? presets.body;
   const fontSize = num(c.fontSize) ?? preset.fontSize;
@@ -96,13 +100,13 @@ const Text: React.FC<BuiltinProps> = ({ props }) => {
   const gradTo = (c.gradTo as string) || "#ec4899";
   const textShadow = (c.textShadow as string) || "";
 
-  const tag = variant.startsWith("h") ? variant : "p";
+  const tag = variant === "display" ? "h1" : variant.startsWith("h") ? variant : "p";
   const style: React.CSSProperties = {
     fontSize: `${fontSize}px`,
     fontWeight,
     textAlign: align as React.CSSProperties["textAlign"],
-    letterSpacing: letterSpacing != null ? `${letterSpacing}px` : undefined,
-    lineHeight: lineHeight != null ? lineHeight : undefined,
+    letterSpacing: letterSpacing != null ? `${letterSpacing}px` : preset.tracking !== 0 ? `${preset.tracking}px` : undefined,
+    lineHeight: lineHeight != null ? lineHeight : preset.lineHeight,
     fontStyle: italic ? "italic" : undefined,
     textTransform: uppercase ? "uppercase" : undefined,
     textShadow: textShadow || undefined,
@@ -140,11 +144,11 @@ const Image: React.FC<BuiltinProps> = ({ props }) => {
 const Card: React.FC<BuiltinProps> = ({ props, interactive, onTrigger }) => {
   return (
     <motion.div
-      whileHover={interactive ? { y: -2 } : undefined}
+      whileHover={interactive ? { y: -3 } : undefined}
       onClick={interactive ? onTrigger : undefined}
-      className="w-full h-full rounded-xl border border-gray-200 bg-white shadow-sm p-4 flex flex-col gap-2"
+      className="w-full h-full rounded-2xl border border-gray-100 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.06)] hover:shadow-[0_16px_44px_rgba(15,23,42,0.10)] transition-shadow duration-300 p-5 flex flex-col gap-2"
     >
-      <div className="text-sm font-semibold text-gray-900">{props.text ?? "卡片标题"}</div>
+      <div className="text-[15px] font-semibold tracking-tight text-gray-900">{props.text ?? "卡片标题"}</div>
       {props.apiUrl && (
         <div className="text-xs text-gray-400 truncate">API: {props.apiUrl}</div>
       )}
@@ -155,17 +159,17 @@ const Card: React.FC<BuiltinProps> = ({ props, interactive, onTrigger }) => {
 /* ---------- Form ---------- */
 const Form: React.FC<BuiltinProps> = ({ props }) => {
   return (
-    <div className="w-full h-full rounded-xl border border-gray-200 bg-white p-4 flex flex-col gap-3">
-      <div className="text-sm font-semibold">{props.text ?? "表单"}</div>
+    <div className="w-full h-full rounded-2xl border border-gray-100 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.06)] p-5 flex flex-col gap-3">
+      <div className="text-[15px] font-semibold tracking-tight text-gray-900">{props.text ?? "表单"}</div>
       <input
         placeholder="字段一"
-        className="h-9 rounded-md border border-gray-300 px-3 text-sm"
+        className="h-10 rounded-lg border border-gray-200 bg-gray-50/60 px-3.5 text-sm placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors"
       />
       <input
         placeholder="字段二"
-        className="h-9 rounded-md border border-gray-300 px-3 text-sm"
+        className="h-10 rounded-lg border border-gray-200 bg-gray-50/60 px-3.5 text-sm placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors"
       />
-      <button className="h-9 self-end rounded-md bg-blue-600 px-4 text-sm text-white">
+      <button className="h-10 self-end rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 px-5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25">
         提交
       </button>
     </div>
@@ -174,10 +178,10 @@ const Form: React.FC<BuiltinProps> = ({ props }) => {
 
 /* ---------- Container ---------- */
 const SHADOW_META: Record<string, { y: number; blur: number; alpha: number }> = {
-  sm: { y: 2, blur: 8, alpha: 0.12 },
-  md: { y: 8, blur: 24, alpha: 0.18 },
-  lg: { y: 16, blur: 40, alpha: 0.25 },
-  xl: { y: 24, blur: 60, alpha: 0.3 },
+  sm: { y: 2, blur: 10, alpha: 0.08 },
+  md: { y: 8, blur: 30, alpha: 0.12 },
+  lg: { y: 16, blur: 48, alpha: 0.16 },
+  xl: { y: 24, blur: 70, alpha: 0.2 },
 };
 
 const Container: React.FC<BuiltinProps> = ({ props }) => {
@@ -192,7 +196,7 @@ const Container: React.FC<BuiltinProps> = ({ props }) => {
   const padding = num(c.padding);
   const opacity = num(c.opacity);
   const shadow = (c.shadow as string) || "none";
-  const shadowColor = (c.shadowColor as string) || "#000000";
+  const shadowColor = (c.shadowColor as string) || "#4f46e5";
   const borderColor = (c.borderColor as string) || "#e5e7eb";
   const borderWidth = num(c.borderWidth) ?? 0;
   const blur = num(c.blur) ?? 12;
@@ -254,15 +258,15 @@ const Container: React.FC<BuiltinProps> = ({ props }) => {
 const Badge: React.FC<BuiltinProps> = ({ props }) => {
   const color = (props.custom?.color as string) ?? "blue";
   const colors: Record<string, string> = {
-    blue: "bg-blue-100 text-blue-700",
-    green: "bg-green-100 text-green-700",
-    red: "bg-red-100 text-red-700",
-    yellow: "bg-yellow-100 text-yellow-700",
-    gray: "bg-gray-100 text-gray-700",
-    purple: "bg-purple-100 text-purple-700",
+    blue: "bg-indigo-50 text-indigo-700 ring-indigo-600/15",
+    green: "bg-emerald-50 text-emerald-700 ring-emerald-600/15",
+    red: "bg-rose-50 text-rose-700 ring-rose-600/15",
+    yellow: "bg-amber-50 text-amber-700 ring-amber-600/20",
+    gray: "bg-gray-50 text-gray-600 ring-gray-500/15",
+    purple: "bg-purple-50 text-purple-700 ring-purple-600/15",
   };
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium", colors[color], "w-full h-full")}>
+    <span className={cn("inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset", colors[color], "w-full h-full")}>
       {props.text ?? "标签"}
     </span>
   );
@@ -272,7 +276,7 @@ const Badge: React.FC<BuiltinProps> = ({ props }) => {
 const Link: React.FC<BuiltinProps> = ({ props }) => {
   const href = props.apiUrl ?? "#";
   return (
-    <a href={href} className="w-full h-full flex items-center text-sm text-blue-600 hover:underline cursor-pointer">
+    <a href={href} className="w-full h-full flex items-center text-sm text-indigo-600 hover:underline cursor-pointer">
       {props.text ?? "链接"}
     </a>
   );
@@ -289,13 +293,13 @@ const Divider: React.FC<BuiltinProps> = ({ props }) => {
 /* ---------- ProgressBar ---------- */
 const ProgressBar: React.FC<BuiltinProps> = ({ props }) => {
   const progress = Math.min(100, Math.max(0, Number(props.custom?.progress ?? 40)));
-  const color = (props.custom?.color as string) ?? "bg-blue-500";
+  const color = (props.custom?.color as string) ?? "bg-gradient-to-r from-indigo-500 to-pink-500";
   return (
-    <div className="w-full h-full flex flex-col gap-1">
-      <div className="w-full h-2 rounded-full bg-gray-200 overflow-hidden">
+    <div className="w-full h-full flex flex-col gap-1.5 justify-center">
+      <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
         <div className={cn("h-full rounded-full transition-all", color)} style={{ width: `${progress}%` }} />
       </div>
-      <span className="text-[10px] text-gray-400">{progress}%</span>
+      <span className="text-[10px] font-medium text-gray-400">{progress}%</span>
     </div>
   );
 };
@@ -308,7 +312,7 @@ const Switch: React.FC<BuiltinProps> = ({ props, interactive }) => {
     <div className="w-full h-full flex items-center gap-2">
       <button
         onClick={() => interactive && setOn((v) => !v)}
-        className={cn("relative h-6 w-11 rounded-full transition-colors", on ? "bg-blue-600" : "bg-gray-300")}
+        className={cn("relative h-6 w-11 rounded-full transition-colors", on ? "bg-indigo-500 shadow-md shadow-indigo-500/30" : "bg-gray-200")}
       >
         <span className={cn("absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform", on && "translate-x-5")} />
       </button>
@@ -342,7 +346,7 @@ const Textarea: React.FC<BuiltinProps> = ({ props }) => {
       placeholder={placeholder}
       value={props.text ?? ""}
       readOnly={!props.custom?.editable}
-      className="w-full h-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+      className="w-full h-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none"
     />
   );
 };
@@ -352,7 +356,7 @@ const Select: React.FC<BuiltinProps> = ({ props }) => {
   const options = (props.custom?.options as string[]) ?? ["选项一", "选项二", "选项三"];
   return (
     <select
-      className="w-full h-full rounded-md border border-gray-300 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="w-full h-full rounded-md border border-gray-300 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
       value={props.text ?? ""}
     >
       {options.map((o) => (
@@ -404,14 +408,17 @@ const Avatar: React.FC<BuiltinProps> = ({ props }) => {
 const Alert: React.FC<BuiltinProps> = ({ props }) => {
   const variant = (props.custom?.variant as string) ?? "info";
   const styles: Record<string, string> = {
-    info: "bg-blue-50 border-blue-200 text-blue-700",
-    success: "bg-green-50 border-green-200 text-green-700",
-    warning: "bg-yellow-50 border-yellow-200 text-yellow-700",
-    error: "bg-red-50 border-red-200 text-red-700",
+    info: "bg-indigo-50/70 border-indigo-200 text-indigo-800",
+    success: "bg-emerald-50/70 border-emerald-200 text-emerald-800",
+    warning: "bg-amber-50/70 border-amber-200 text-amber-800",
+    error: "bg-rose-50/70 border-rose-200 text-rose-800",
   };
+  const iconNames: Record<string, string> = { info: "Info", success: "CheckCircle2", warning: "AlertTriangle", error: "XCircle" };
+  const LucideIcon = (Lucide as unknown as Record<string, React.FC<{ size?: number; className?: string }>>)[iconNames[variant]];
   return (
-    <div className={cn("w-full h-full rounded-lg border p-3 flex items-start gap-2", styles[variant])}>
-      <span className="text-xs flex-1">{props.text ?? "提示信息"}</span>
+    <div className={cn("w-full h-full rounded-xl border px-3.5 py-3 flex items-center gap-2.5", styles[variant])}>
+      {LucideIcon && <LucideIcon size={15} className="shrink-0 opacity-80" />}
+      <span className="text-xs font-medium leading-relaxed flex-1">{props.text ?? "提示信息"}</span>
     </div>
   );
 };
@@ -427,7 +434,7 @@ const Tabs: React.FC<BuiltinProps> = ({ props, interactive }) => {
           <button
             key={i}
             onClick={() => interactive && setActive(i)}
-            className={cn("px-3 py-1.5 text-xs font-medium border-b-2 transition-colors", active === i ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700")}
+            className={cn("px-3 py-1.5 text-xs font-medium border-b-2 transition-colors", active === i ? "border-indigo-500 text-indigo-600" : "border-transparent text-gray-500 hover:text-gray-700")}
           >
             {t}
           </button>
@@ -465,11 +472,14 @@ const Accordion: React.FC<BuiltinProps> = ({ props, interactive }) => {
 const Navbar: React.FC<BuiltinProps> = ({ props }) => {
   const links = (props.custom?.links as string[]) ?? ["首页", "产品", "文档", "关于"];
   return (
-    <div className="w-full h-full flex items-center justify-between px-4 bg-white border-b border-gray-200">
-      <span className="text-sm font-bold text-gray-900">{props.text ?? "Logo"}</span>
-      <div className="flex items-center gap-4">
+    <div className="w-full h-full flex items-center justify-between px-5 bg-white/75 backdrop-blur-xl border-b border-gray-100">
+      <div className="flex items-center gap-2">
+        <span className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-500 to-pink-500 shadow-md shadow-indigo-500/25" />
+        <span className="text-sm font-bold tracking-tight text-gray-900">{props.text ?? "Logo"}</span>
+      </div>
+      <div className="flex items-center gap-5">
         {links.map((l, i) => (
-          <span key={i} className="text-xs text-gray-600 hover:text-blue-600 cursor-pointer">{l}</span>
+          <span key={i} className="text-[13px] font-medium text-gray-500 hover:text-indigo-600 cursor-pointer transition-colors">{l}</span>
         ))}
       </div>
     </div>
@@ -480,11 +490,11 @@ const Navbar: React.FC<BuiltinProps> = ({ props }) => {
 const Footer: React.FC<BuiltinProps> = ({ props }) => {
   const links = (props.custom?.links as string[]) ?? ["隐私政策", "服务条款", "联系我们"];
   return (
-    <div className="w-full h-full flex items-center justify-between px-4 bg-gray-50 border-t border-gray-200">
+    <div className="w-full h-full flex items-center justify-between px-5 bg-gray-50/80 border-t border-gray-100">
       <span className="text-xs text-gray-400">{props.text ?? "© 2025 Company"}</span>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         {links.map((l, i) => (
-          <span key={i} className="text-xs text-gray-500 hover:text-blue-600 cursor-pointer">{l}</span>
+          <span key={i} className="text-xs text-gray-500 hover:text-indigo-600 cursor-pointer transition-colors">{l}</span>
         ))}
       </div>
     </div>
@@ -498,7 +508,7 @@ const Breadcrumb: React.FC<BuiltinProps> = ({ props }) => {
     <div className="w-full h-full flex items-center gap-1 text-xs">
       {items.map((item, i) => (
         <React.Fragment key={i}>
-          <span className={cn(i === items.length - 1 ? "text-gray-900 font-medium" : "text-blue-600 hover:underline cursor-pointer")}>
+          <span className={cn(i === items.length - 1 ? "text-gray-900 font-medium" : "text-indigo-600 hover:underline cursor-pointer")}>
             {item}
           </span>
           {i < items.length - 1 && <span className="text-gray-300">/</span>}
@@ -520,7 +530,7 @@ const Pagination: React.FC<BuiltinProps> = ({ props }) => {
         <button
           key={p}
           onClick={() => setCurrent(p)}
-          className={cn("px-2 py-1 text-xs rounded border", current === p ? "border-blue-500 bg-blue-500 text-white" : "border-gray-200 text-gray-600 hover:bg-gray-50")}
+          className={cn("px-2 py-1 text-xs rounded-md border", current === p ? "border-indigo-500 bg-indigo-500 text-white shadow-md shadow-indigo-500/25" : "border-gray-200 text-gray-600 hover:bg-gray-50")}
         >
           {p}
         </button>
@@ -542,7 +552,7 @@ const RadioGroup: React.FC<BuiltinProps> = ({ props, interactive }) => {
             type="radio"
             checked={selected === i}
             onChange={() => interactive && setSelected(i)}
-            className="h-4 w-4 text-blue-600"
+            className="h-4 w-4 text-indigo-600"
           />
           {o}
         </label>
@@ -558,7 +568,7 @@ const Slider: React.FC<BuiltinProps> = ({ props }) => {
   const max = Number(props.custom?.max ?? 100);
   return (
     <div className="w-full h-full flex flex-col gap-1">
-      <input type="range" min={min} max={max} defaultValue={val} className="w-full accent-blue-600" />
+      <input type="range" min={min} max={max} defaultValue={val} className="w-full accent-indigo-500" />
       <div className="flex justify-between text-[10px] text-gray-400">
         <span>{min}</span>
         <span>{val}</span>
@@ -571,7 +581,7 @@ const Slider: React.FC<BuiltinProps> = ({ props }) => {
 /* ---------- Spinner ---------- */
 const Spinner: React.FC<BuiltinProps> = ({ props }) => {
   const size = Number(props.custom?.spinnerSize ?? 24);
-  const color = (props.custom?.color as string) ?? "text-blue-500";
+  const color = (props.custom?.color as string) ?? "text-indigo-500";
   return (
     <div className="w-full h-full grid place-items-center">
       <div className={cn("animate-spin rounded-full border-2 border-gray-200 border-t-current", color)} style={{ width: size, height: size }} />
@@ -598,9 +608,10 @@ const StatCard: React.FC<BuiltinProps> = ({ props }) => {
   const value = (props.custom?.statValue as string) ?? "1,234";
   const label = (props.custom?.statLabel as string) ?? "总量";
   return (
-    <div className="w-full h-full rounded-xl border border-gray-200 bg-white p-3 flex flex-col justify-center">
-      <div className="text-2xl font-bold text-gray-900">{value}</div>
-      <div className="text-xs text-gray-500 mt-0.5">{label}</div>
+    <div className="w-full h-full rounded-2xl border border-gray-100 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.06)] px-4 py-3 flex flex-col justify-center relative overflow-hidden">
+      <div className="absolute left-0 top-3 bottom-3 w-1 rounded-full bg-gradient-to-b from-indigo-500 to-pink-500" />
+      <div className="text-[26px] leading-8 font-extrabold tracking-tight text-gray-900">{value}</div>
+      <div className="text-xs text-gray-400 mt-1">{label}</div>
     </div>
   );
 };
@@ -608,7 +619,7 @@ const StatCard: React.FC<BuiltinProps> = ({ props }) => {
 /* ---------- Quote ---------- */
 const Quote: React.FC<BuiltinProps> = ({ props }) => {
   return (
-    <blockquote className="w-full h-full border-l-4 border-gray-300 pl-3 py-1 text-sm text-gray-600 italic">
+    <blockquote className="w-full h-full flex items-center rounded-r-xl border-l-4 border-indigo-400 bg-gradient-to-r from-indigo-50/60 to-transparent pl-4 pr-3 py-2 text-sm leading-relaxed text-gray-600 italic">
       {props.text ?? "这是一段引用文字"}
     </blockquote>
   );
@@ -628,7 +639,7 @@ const Tag: React.FC<BuiltinProps> = ({ props }) => {
   const color = (props.custom?.color as string) ?? "gray";
   const colors: Record<string, string> = {
     gray: "bg-gray-100 text-gray-600 border-gray-200",
-    blue: "bg-blue-100 text-blue-600 border-blue-200",
+    blue: "bg-indigo-50 text-indigo-600 border-indigo-200",
     green: "bg-green-100 text-green-600 border-green-200",
     red: "bg-red-100 text-red-600 border-red-200",
     orange: "bg-orange-100 text-orange-600 border-orange-200",
@@ -662,17 +673,17 @@ const Table: React.FC<BuiltinProps> = ({ props }) => {
   return (
     <table className="w-full h-full text-xs">
       <thead>
-        <tr className="border-b border-gray-200">
+        <tr className="border-b border-gray-100 bg-gray-50/60">
           {headers.map((h, i) => (
-            <th key={i} className="text-left py-1 px-2 font-medium text-gray-600">{h}</th>
+            <th key={i} className="text-left py-2 px-3 font-semibold text-gray-500">{h}</th>
           ))}
         </tr>
       </thead>
       <tbody>
         {rows.map((row, ri) => (
-          <tr key={ri} className="border-b border-gray-100">
+          <tr key={ri} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
             {(Array.isArray(row) ? row : [row]).map((cell, ci) => (
-              <td key={ci} className="py-1 px-2 text-gray-700">{cell}</td>
+              <td key={ci} className="py-2 px-3 text-gray-600">{cell}</td>
             ))}
           </tr>
         ))}
@@ -690,13 +701,13 @@ const Steps: React.FC<BuiltinProps> = ({ props }) => {
       {steps.map((s, i) => (
         <React.Fragment key={i}>
           <div className="flex flex-col items-center">
-            <div className={cn("w-6 h-6 rounded-full grid place-items-center text-xs font-medium", i < current ? "bg-blue-500 text-white" : i === current ? "bg-blue-100 text-blue-600 border-2 border-blue-500" : "bg-gray-200 text-gray-400")}>
+            <div className={cn("w-6 h-6 rounded-full grid place-items-center text-xs font-medium", i < current ? "bg-indigo-500 text-white" : i === current ? "bg-indigo-100 text-indigo-600 border-2 border-indigo-500" : "bg-gray-200 text-gray-400")}>
               {i + 1}
             </div>
             <span className="text-[10px] text-gray-500 mt-1">{s}</span>
           </div>
           {i < steps.length - 1 && (
-            <div className={cn("flex-1 h-0.5 mx-1 mb-4", i < current ? "bg-blue-500" : "bg-gray-200")} />
+            <div className={cn("flex-1 h-0.5 mx-1 mb-4", i < current ? "bg-indigo-500" : "bg-gray-200")} />
           )}
         </React.Fragment>
       ))}
@@ -752,7 +763,7 @@ const SearchInput: React.FC<BuiltinProps> = ({ props }) => {
       <input
         type="text"
         placeholder={props.text ?? "搜索..."}
-        className="w-full h-full rounded-full border border-gray-300 pl-8 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full h-full rounded-full border border-gray-300 pl-8 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
       />
     </div>
   );
@@ -768,7 +779,7 @@ const PasswordInput: React.FC<BuiltinProps> = ({ props }) => {
       <input
         type={show ? "text" : "password"}
         placeholder={props.text ?? "请输入密码"}
-        className="w-full h-full rounded-md border border-gray-300 px-3 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full h-full rounded-md border border-gray-300 px-3 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
       />
       <button
         onClick={() => setShow((v) => !v)}
@@ -797,14 +808,14 @@ const Empty: React.FC<BuiltinProps> = ({ props }) => {
 const Banner: React.FC<BuiltinProps> = ({ props }) => {
   const variant = (props.custom?.variant as string) ?? "info";
   const styles: Record<string, string> = {
-    info: "bg-blue-500",
-    success: "bg-green-500",
-    warning: "bg-yellow-500",
-    error: "bg-red-500",
+    info: "bg-gradient-to-r from-indigo-500 to-indigo-600",
+    success: "bg-gradient-to-r from-emerald-500 to-green-600",
+    warning: "bg-gradient-to-r from-amber-500 to-orange-500",
+    error: "bg-gradient-to-r from-rose-500 to-red-600",
   };
   return (
-    <div className={cn("w-full h-full rounded-md px-4 flex items-center text-white", styles[variant])}>
-      <span className="text-xs font-medium">{props.text ?? "公告内容"}</span>
+    <div className={cn("w-full h-full rounded-lg px-4 flex items-center text-white shadow-lg", styles[variant])}>
+      <span className="text-xs font-semibold tracking-wide">{props.text ?? "公告内容"}</span>
     </div>
   );
 };
@@ -814,18 +825,19 @@ const Notification: React.FC<BuiltinProps> = ({ props }) => {
   const variant = (props.custom?.variant as string) ?? "info";
   const icons: Record<string, string> = { info: "Info", success: "CheckCircle", warning: "AlertTriangle", error: "XCircle" };
   const colors: Record<string, string> = {
-    info: "border-l-blue-500",
+    info: "border-l-indigo-500",
     success: "border-l-green-500",
     warning: "border-l-yellow-500",
     error: "border-l-red-500",
   };
   const IconName = icons[variant];
+  const iconColors: Record<string, string> = { info: "text-indigo-500", success: "text-emerald-500", warning: "text-amber-500", error: "text-rose-500" };
   const LucideIcon = (Lucide as unknown as Record<string, React.FC<{ size?: number; className?: string }>>)[IconName];
   return (
-    <div className={cn("w-full h-full rounded-md bg-white shadow-sm border border-gray-200 border-l-4 p-3 flex items-start gap-2", colors[variant])}>
-      {LucideIcon && <LucideIcon size={16} className="text-gray-400 mt-0.5" />}
+    <div className={cn("w-full h-full rounded-xl bg-white shadow-[0_12px_36px_rgba(15,23,42,0.10)] border border-gray-100 border-l-4 p-3.5 flex items-start gap-2.5", colors[variant])}>
+      {LucideIcon && <LucideIcon size={16} className={cn("mt-0.5 shrink-0", iconColors[variant])} />}
       <div className="flex-1">
-        <div className="text-xs font-medium text-gray-900">{props.text ?? "通知标题"}</div>
+        <div className="text-xs font-semibold text-gray-900">{props.text ?? "通知标题"}</div>
         <div className="text-[10px] text-gray-400 mt-0.5">这是一段通知描述</div>
       </div>
     </div>
@@ -840,7 +852,7 @@ const Timeline: React.FC<BuiltinProps> = ({ props }) => {
       {items.map((item, i) => (
         <div key={i} className="flex gap-2 flex-1">
           <div className="flex flex-col items-center">
-            <div className={cn("w-2.5 h-2.5 rounded-full", i === 0 ? "bg-blue-500" : "bg-gray-300")} />
+            <div className={cn("w-2.5 h-2.5 rounded-full", i === 0 ? "bg-indigo-500" : "bg-gray-300")} />
             {i < items.length - 1 && <div className="flex-1 w-0.5 bg-gray-200 my-1" />}
           </div>
           <span className="text-xs text-gray-600 pt-0.5">{item}</span>
@@ -887,7 +899,7 @@ const Freehand: React.FC<BuiltinProps> = ({ props }) => {
 const GradientText: React.FC<BuiltinProps> = ({ props }) => {
   const from = (props.custom?.from as string) ?? "#6366f1";
   const to = (props.custom?.to as string) ?? "#ec4899";
-  return <div className="w-full h-full flex items-center justify-center"><span className="text-lg font-bold bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(135deg, ${from}, ${to})` }}>{props.text ?? "渐变文字"}</span></div>;
+  return <div className="w-full h-full flex items-center justify-center"><span className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(135deg, ${from}, ${to})` }}>{props.text ?? "渐变文字"}</span></div>;
 };
 
 /* ---------- Highlight ---------- */
@@ -922,7 +934,7 @@ const Carousel: React.FC<BuiltinProps> = ({ props }) => {
   return (
     <div className="w-full h-full rounded-lg bg-gray-100 flex flex-col items-center justify-center gap-2 relative overflow-hidden">
       <span className="text-sm font-medium text-gray-700">{items[idx]}</span>
-      <div className="flex gap-1">{items.map((_, i) => <button key={i} onClick={() => setIdx(i)} className={cn("w-2 h-2 rounded-full", i === idx ? "bg-blue-500" : "bg-gray-300")} />)}</div>
+      <div className="flex gap-1">{items.map((_, i) => <button key={i} onClick={() => setIdx(i)} className={cn("w-2 h-2 rounded-full", i === idx ? "bg-indigo-500" : "bg-gray-300")} />)}</div>
     </div>
   );
 };
@@ -931,9 +943,9 @@ const Carousel: React.FC<BuiltinProps> = ({ props }) => {
 const TreeView: React.FC<BuiltinProps> = ({ props }) => {
   const items = (props.custom?.items as string[]) ?? ["src", "components", "pages", "utils"];
   return (
-    <div className="w-full h-full flex flex-col gap-0.5 p-2 text-xs font-mono text-gray-700">
-      <span className="font-bold">📁 {items[0] ?? "root"}</span>
-      {items.slice(1).map((item, i) => <span key={i} className="pl-4 text-gray-600">📄 {item}</span>)}
+    <div className="w-full h-full flex flex-col gap-1 p-2 text-xs text-gray-700">
+      <span className="flex items-center gap-1.5 font-semibold"><Lucide.Folder size={13} className="text-indigo-500" />{items[0] ?? "root"}</span>
+      {items.slice(1).map((item, i) => <span key={i} className="flex items-center gap-1.5 pl-4 text-gray-500"><Lucide.File size={12} className="text-gray-400" />{item}</span>)}
     </div>
   );
 };
@@ -953,8 +965,8 @@ const Chart: React.FC<BuiltinProps> = ({ props }) => {
   const data = (props.custom?.data as number[]) ?? [40, 70, 50, 90, 60, 80];
   const max = Math.max(...data, 1);
   return (
-    <div className="w-full h-full flex items-end gap-1 p-2">
-      {data.map((v, i) => <div key={i} className="flex-1 rounded-t bg-blue-500 transition-all" style={{ height: `${(v / max) * 100}%`, opacity: 0.6 + (i / data.length) * 0.4 }} />)}
+    <div className="w-full h-full flex items-end gap-1.5 p-2">
+      {data.map((v, i) => <div key={i} className="flex-1 rounded-t-md bg-gradient-to-t from-indigo-500 to-indigo-400 hover:from-indigo-600 hover:to-indigo-500 transition-all" style={{ height: `${(v / max) * 100}%` }} />)}
     </div>
   );
 };
@@ -966,7 +978,7 @@ const Calendar: React.FC<BuiltinProps> = () => {
     <div className="w-full h-full p-2">
       <div className="grid grid-cols-7 gap-0.5 text-center text-[9px]">
         {["日","一","二","三","四","五","六"].map(d => <span key={d} className="text-gray-400 font-medium">{d}</span>)}
-        {days.map(d => <span key={d} className={cn("rounded py-0.5", d === 15 ? "bg-blue-500 text-white" : "text-gray-700")}>{d}</span>)}
+        {days.map(d => <span key={d} className={cn("rounded-full py-0.5", d === 15 ? "bg-indigo-500 text-white font-semibold shadow-md shadow-indigo-500/30" : "text-gray-600 hover:bg-indigo-50")}>{d}</span>)}
       </div>
     </div>
   );
@@ -977,7 +989,7 @@ const Modal: React.FC<BuiltinProps> = ({ props }) => (
   <div className="w-full h-full rounded-lg border border-gray-200 bg-white shadow-lg flex flex-col p-3">
     <div className="flex justify-between items-center mb-2"><span className="text-sm font-semibold">{props.text ?? "弹窗标题"}</span><span className="text-gray-400 text-xs">✕</span></div>
     <div className="flex-1 text-xs text-gray-500">弹窗内容区域</div>
-    <div className="flex justify-end gap-2 mt-2"><button className="px-3 py-1 text-xs rounded border border-gray-200">取消</button><button className="px-3 py-1 text-xs rounded bg-blue-600 text-white">确定</button></div>
+    <div className="flex justify-end gap-2 mt-2"><button className="px-3 py-1 text-xs rounded border border-gray-200">取消</button><button className="px-3 py-1 text-xs rounded bg-indigo-500 text-white">确定</button></div>
   </div>
 );
 
@@ -985,7 +997,7 @@ const Modal: React.FC<BuiltinProps> = ({ props }) => (
 const Drawer: React.FC<BuiltinProps> = ({ props }) => (
   <div className="w-full h-full rounded-lg border border-gray-200 bg-white shadow-lg flex flex-col p-3">
     <div className="text-sm font-semibold mb-2">{props.text ?? "抽屉标题"}</div>
-    <div className="flex-1 text-xs text-gray-400 border-l-2 border-blue-200 pl-2">侧边抽屉内容</div>
+    <div className="flex-1 text-xs text-gray-400 border-l-2 border-indigo-200 pl-2">侧边抽屉内容</div>
   </div>
 );
 
@@ -1002,11 +1014,20 @@ const Popconfirm: React.FC<BuiltinProps> = ({ props }) => (
 /* ---------- Result ---------- */
 const Result: React.FC<BuiltinProps> = ({ props }) => {
   const status = (props.custom?.status as string) ?? "success";
-  const icons: Record<string, string> = { success: "✅", error: "❌", warning: "⚠️", info: "ℹ️" };
+  const meta: Record<string, { icon: string; ring: string; fg: string }> = {
+    success: { icon: "CheckCircle2", ring: "bg-emerald-50", fg: "text-emerald-500" },
+    error: { icon: "XCircle", ring: "bg-rose-50", fg: "text-rose-500" },
+    warning: { icon: "AlertTriangle", ring: "bg-amber-50", fg: "text-amber-500" },
+    info: { icon: "Info", ring: "bg-indigo-50", fg: "text-indigo-500" },
+  };
+  const m = meta[status] ?? meta.success;
+  const LucideIcon = (Lucide as unknown as Record<string, React.FC<{ size?: number; className?: string }>>)[m.icon];
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-      <span className="text-2xl">{icons[status]}</span>
-      <span className="text-sm font-medium text-gray-800">{props.text ?? "操作成功"}</span>
+    <div className="w-full h-full flex flex-col items-center justify-center gap-2.5">
+      <span className={cn("w-12 h-12 rounded-full grid place-items-center", m.ring)}>
+        {LucideIcon && <LucideIcon size={24} className={m.fg} />}
+      </span>
+      <span className="text-sm font-semibold text-gray-900">{props.text ?? "操作成功"}</span>
       <span className="text-xs text-gray-400">结果描述信息</span>
     </div>
   );
@@ -1026,9 +1047,12 @@ const Watermark: React.FC<BuiltinProps> = ({ props }) => (
 const Sidebar: React.FC<BuiltinProps> = ({ props }) => {
   const items = (props.custom?.items as string[]) ?? ["仪表盘", "用户管理", "设置", "日志"];
   return (
-    <div className="w-full h-full rounded-lg bg-gray-900 p-2 flex flex-col gap-1">
-      <div className="text-xs font-bold text-white mb-2 px-2">{props.text ?? "Logo"}</div>
-      {items.map((item, i) => <div key={i} className={cn("px-2 py-1.5 rounded text-xs", i === 0 ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white")}>{item}</div>)}
+    <div className="w-full h-full rounded-2xl bg-gradient-to-b from-slate-900 to-gray-900 p-2.5 flex flex-col gap-1">
+      <div className="flex items-center gap-2 px-2 mb-2">
+        <span className="w-5 h-5 rounded-md bg-gradient-to-br from-indigo-500 to-pink-500" />
+        <span className="text-[13px] font-bold text-white tracking-tight">{props.text ?? "Logo"}</span>
+      </div>
+      {items.map((item, i) => <div key={i} className={cn("px-2.5 py-1.5 rounded-lg text-xs transition-colors", i === 0 ? "bg-gradient-to-r from-indigo-500 to-indigo-600 text-white font-medium shadow-lg shadow-indigo-500/30" : "text-gray-400 hover:text-white hover:bg-white/5")}>{item}</div>)}
     </div>
   );
 };
@@ -1057,7 +1081,7 @@ const Dropdown: React.FC<BuiltinProps> = ({ props }) => {
 /* ---------- BackTop ---------- */
 const BackTop: React.FC<BuiltinProps> = () => (
   <div className="w-full h-full flex items-center justify-center">
-    <button className="w-8 h-8 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center text-sm">↑</button>
+    <button className="w-8 h-8 rounded-full bg-indigo-500 text-white shadow-lg flex items-center justify-center text-sm">↑</button>
   </div>
 );
 
@@ -1078,8 +1102,8 @@ const ColorPicker: React.FC<BuiltinProps> = ({ props }) => (
 
 /* ---------- FileUpload ---------- */
 const FileUpload: React.FC<BuiltinProps> = ({ props }) => (
-  <div className="w-full h-full rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-1 text-gray-400">
-    <span className="text-lg">📁</span><span className="text-xs">{props.text ?? "点击或拖拽上传"}</span>
+  <div className="w-full h-full rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 flex flex-col items-center justify-center gap-1.5 text-gray-400 hover:border-indigo-300 hover:bg-indigo-50/40 hover:text-indigo-500 transition-colors cursor-pointer">
+    <Lucide.UploadCloud size={22} strokeWidth={1.6} /><span className="text-xs font-medium">{props.text ?? "点击或拖拽上传"}</span>
   </div>
 );
 
@@ -1128,7 +1152,7 @@ const TagInput: React.FC<BuiltinProps> = ({ props }) => {
   const tags = (props.custom?.tags as string[]) ?? ["React", "Next.js", "TypeScript"];
   return (
     <div className="w-full h-full rounded-md border border-gray-300 px-2 flex items-center gap-1 flex-wrap">
-      {tags.map((t, i) => <span key={i} className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px]">{t} ×</span>)}
+      {tags.map((t, i) => <span key={i} className="px-1.5 py-0.5 bg-indigo-50 text-indigo-700 rounded text-[10px]">{t} ×</span>)}
       <input className="flex-1 min-w-[40px] text-xs outline-none" placeholder={props.text ?? "添加..."} />
     </div>
   );
@@ -1161,7 +1185,7 @@ const MultiSelect: React.FC<BuiltinProps> = ({ props }) => {
   const [sel, setSel] = React.useState<number[]>([0]);
   return (
     <div className="w-full h-full rounded-md border border-gray-300 p-1 flex flex-wrap gap-1 content-start">
-      {options.map((o, i) => <button key={i} onClick={() => setSel(s => s.includes(i) ? s.filter(x => x !== i) : [...s, i])} className={cn("px-2 py-0.5 rounded text-[10px] border", sel.includes(i) ? "bg-blue-500 text-white border-blue-500" : "border-gray-200 text-gray-600")}>{o}</button>)}
+      {options.map((o, i) => <button key={i} onClick={() => setSel(s => s.includes(i) ? s.filter(x => x !== i) : [...s, i])} className={cn("px-2 py-0.5 rounded text-[10px] border", sel.includes(i) ? "bg-indigo-500 text-white border-indigo-500" : "border-gray-200 text-gray-600")}>{o}</button>)}
     </div>
   );
 };
@@ -1187,8 +1211,8 @@ const MonthPicker: React.FC<BuiltinProps> = ({ props }) => (
 
 /* ---------- ImageUpload ---------- */
 const ImageUpload: React.FC<BuiltinProps> = ({ props }) => (
-  <div className="w-full h-full rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-1 text-gray-400 hover:border-blue-400 transition-colors cursor-pointer">
-    <span className="text-lg">🖼️</span><span className="text-[10px]">{props.text ?? "点击上传图片"}</span>
+  <div className="w-full h-full rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 flex flex-col items-center justify-center gap-1.5 text-gray-400 hover:border-indigo-300 hover:bg-indigo-50/40 hover:text-indigo-500 transition-colors cursor-pointer">
+    <Lucide.Image size={20} strokeWidth={1.6} /><span className="text-[10px] font-medium">{props.text ?? "点击上传图片"}</span>
   </div>
 );
 
@@ -1196,8 +1220,8 @@ const ImageUpload: React.FC<BuiltinProps> = ({ props }) => (
 const SignaturePad: React.FC<BuiltinProps> = ({ props }) => (
   <div className="w-full h-full rounded-lg border border-gray-300 bg-gray-50 flex flex-col items-center justify-center relative">
     <span className="text-xs text-gray-300">{props.text ?? "签名区域"}</span>
-    <div className="absolute bottom-1 right-2 text-[9px] text-gray-300">✍️</div>
-    <div className="absolute bottom-0 left-2 right-2 border-b border-gray-300" />
+    <div className="absolute bottom-1 right-2 text-gray-300"><Lucide.PenTool size={10} /></div>
+    <div className="absolute bottom-0 left-2 right-2 border-b border-gray-200" />
   </div>
 );
 
@@ -1232,8 +1256,8 @@ const DualSlider: React.FC<BuiltinProps> = ({ props }) => {
   return (
     <div className="w-full h-full flex flex-col gap-1 justify-center">
       <div className="flex items-center gap-2">
-        <input type="range" min={min} max={max} defaultValue={25} className="flex-1 accent-blue-600" />
-        <input type="range" min={min} max={max} defaultValue={75} className="flex-1 accent-blue-600" />
+        <input type="range" min={min} max={max} defaultValue={25} className="flex-1 accent-indigo-500" />
+        <input type="range" min={min} max={max} defaultValue={75} className="flex-1 accent-indigo-500" />
       </div>
       <div className="flex justify-between text-[10px] text-gray-400"><span>{min}</span><span>范围选择</span><span>{max}</span></div>
     </div>
@@ -1263,7 +1287,7 @@ const ClearableInput: React.FC<BuiltinProps> = ({ props }) => {
 const VoiceInput: React.FC<BuiltinProps> = ({ props }) => (
   <div className="w-full h-full flex items-center gap-2">
     <input className="flex-1 h-full rounded-md border border-gray-300 px-3 text-sm" placeholder={props.text ?? "语音输入..."} readOnly />
-    <button className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center text-sm shrink-0">🎙</button>
+    <button className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-500 to-red-500 text-white shadow-md shadow-rose-500/30 flex items-center justify-center shrink-0"><Lucide.Mic size={14} /></button>
   </div>
 );
 
@@ -1326,10 +1350,13 @@ const FontPicker: React.FC<BuiltinProps> = ({ props }) => (
 
 /* ---------- IconPicker ---------- */
 const IconPicker: React.FC<BuiltinProps> = () => {
-  const icons = ["❤️", "⭐", "🔥", "✅", "🚀", "💡", "🎯", "📌", "🔔", "💬", "📁", "🌟"];
+  const iconNames = ["Heart", "Star", "Zap", "Check", "Rocket", "Lightbulb", "Target", "Bookmark", "Bell", "MessageCircle", "Folder", "Flag"];
   return (
-    <div className="w-full h-full rounded-md border border-gray-300 p-1.5 grid grid-cols-6 gap-1 content-start">
-      {icons.map((ic, i) => <button key={i} className="w-full aspect-square rounded hover:bg-blue-50 flex items-center justify-center text-sm">{ic}</button>)}
+    <div className="w-full h-full rounded-lg border border-gray-200 p-1.5 grid grid-cols-6 gap-1 content-start">
+      {iconNames.map((name, i) => {
+        const Ic = (Lucide as unknown as Record<string, React.FC<{ size?: number; className?: string }>>)[name];
+        return Ic ? <button key={i} className="w-full aspect-square rounded-md hover:bg-indigo-50 hover:text-indigo-600 text-gray-500 flex items-center justify-center transition-colors"><Ic size={15} /></button> : null;
+      })}
     </div>
   );
 };
@@ -1348,7 +1375,7 @@ const SearchSelect: React.FC<BuiltinProps> = ({ props }) => {
     <div className="w-full h-full relative flex items-center">
       <input className="w-full h-full rounded-md border border-gray-300 px-3 text-sm" placeholder={props.text ?? "搜索选择..."} />
       <div className="absolute top-full left-0 right-0 mt-0.5 rounded border border-gray-200 bg-white shadow-md p-0.5 z-10">
-        {options.slice(0, 3).map((o, i) => <div key={i} className="px-2 py-1 text-[10px] text-gray-700 rounded hover:bg-blue-50">{o}</div>)}
+        {options.slice(0, 3).map((o, i) => <div key={i} className="px-2 py-1 text-[10px] text-gray-700 rounded hover:bg-indigo-50">{o}</div>)}
       </div>
     </div>
   );
@@ -1361,9 +1388,9 @@ const EditableField: React.FC<BuiltinProps> = ({ props, interactive }) => {
   return (
     <div className="w-full h-full flex items-center">
       {editing ? (
-        <input autoFocus value={val} onChange={(e) => setVal(e.target.value)} onBlur={() => setEditing(false)} onKeyDown={(e) => e.key === "Enter" && setEditing(false)} className="w-full h-full rounded-md border border-blue-400 px-2 text-sm" />
+        <input autoFocus value={val} onChange={(e) => setVal(e.target.value)} onBlur={() => setEditing(false)} onKeyDown={(e) => e.key === "Enter" && setEditing(false)} className="w-full h-full rounded-md border border-indigo-400 px-2 text-sm" />
       ) : (
-        <button onClick={() => interactive && setEditing(true)} className="text-sm text-gray-700 hover:text-blue-600 border-b border-dashed border-gray-300">{val} ✏️</button>
+        <button onClick={() => interactive && setEditing(true)} className="inline-flex items-center gap-1 text-sm text-gray-700 hover:text-indigo-600 border-b border-dashed border-gray-300 transition-colors">{val}<Lucide.Pencil size={12} className="opacity-60" /></button>
       )}
     </div>
   );
@@ -1386,7 +1413,7 @@ const StrengthMeter: React.FC<BuiltinProps> = ({ props }) => {
 /* ---------- PinInput ---------- */
 const PinInput: React.FC<BuiltinProps> = () => (
   <div className="w-full h-full flex items-center justify-center gap-2">
-    {Array.from({ length: 4 }).map((_, i) => <input key={i} maxLength={1} className="w-10 h-12 text-center rounded-lg border-2 border-gray-300 text-lg font-bold font-mono focus:border-blue-500 outline-none" />)}
+    {Array.from({ length: 4 }).map((_, i) => <input key={i} maxLength={1} className="w-10 h-12 text-center rounded-lg border-2 border-gray-300 text-lg font-bold font-mono focus:border-indigo-500 outline-none" />)}
   </div>
 );
 
@@ -1397,8 +1424,8 @@ const Section: React.FC<BuiltinProps> = ({ props }) => {
   const bg = (props.custom?.bgColor as string) ?? "#f8fafc";
   const label = props.text ?? "全屏 Section";
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-blue-300 rounded-xl relative overflow-hidden" style={{ background: bg }}>
-      <div className="absolute top-2 left-3 text-[10px] font-semibold text-blue-400 uppercase tracking-wide">Section</div>
+    <div className="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-indigo-300 rounded-xl relative overflow-hidden" style={{ background: bg }}>
+      <div className="absolute top-2 left-3 text-[10px] font-semibold text-indigo-400 uppercase tracking-wide">Section</div>
       <span className="text-sm font-medium text-gray-500">{label}</span>
       <span className="text-[10px] text-gray-400 mt-1">预览时全屏展示，其他组件可叠加在其上方</span>
     </div>
@@ -1438,8 +1465,8 @@ const SplineEmbed: React.FC<BuiltinProps> = ({ props }) => {
   const url = (props.custom?.splineUrl as string) ?? "";
   if (!url) {
     return (
-      <div className="w-full h-full rounded-xl border-2 border-dashed border-teal-300 bg-teal-50 flex flex-col items-center justify-center gap-1">
-        <span className="text-lg">🧊</span>
+      <div className="w-full h-full rounded-xl border-2 border-dashed border-teal-300 bg-teal-50 flex flex-col items-center justify-center gap-1.5">
+        <Lucide.Box size={22} strokeWidth={1.6} className="text-teal-500" />
         <span className="text-xs font-medium text-teal-600">Spline 3D 场景</span>
         <span className="text-[10px] text-teal-400">在属性面板填入 Spline 场景 URL</span>
       </div>
@@ -1591,7 +1618,7 @@ export const BUILTIN_DEFS: ComponentDef[] = [
     category: "基础",
     propsSchema: [
       { key: "text", label: "内容", type: "string", bucket: "base" },
-      { key: "variant", label: "层级预设", type: "select", options: ["h1", "h2", "h3", "body", "caption"], default: "body", bucket: "custom" },
+      { key: "variant", label: "层级预设", type: "select", options: ["display", "h1", "h2", "h3", "body", "caption"], default: "body", bucket: "custom" },
       { key: "fontSize", label: "字号", type: "number", bucket: "custom" },
       { key: "fontWeight", label: "字重", type: "select", options: ["300", "400", "500", "600", "700", "800", "900"], bucket: "custom" },
       { key: "color", label: "颜色", type: "color", bucket: "custom" },
@@ -1686,7 +1713,7 @@ export const BUILTIN_DEFS: ComponentDef[] = [
     label: "分割线",
     category: "基础",
     propsSchema: [
-      { key: "color", label: "颜色", type: "select", options: ["border-gray-300", "border-gray-200", "border-gray-400", "border-blue-300", "border-red-300"], default: "border-gray-300", bucket: "custom" },
+      { key: "color", label: "颜色", type: "select", options: ["border-gray-300", "border-gray-200", "border-gray-400", "border-indigo-300", "border-red-300"], default: "border-gray-300", bucket: "custom" },
       { key: "style", label: "样式", type: "select", options: ["solid", "dashed", "dotted"], default: "solid", bucket: "custom" },
     ],
   },
@@ -1697,7 +1724,7 @@ export const BUILTIN_DEFS: ComponentDef[] = [
     category: "反馈",
     propsSchema: [
       { key: "progress", label: "进度", type: "number", default: 40, bucket: "custom" },
-      { key: "color", label: "颜色", type: "select", options: ["bg-blue-500", "bg-green-500", "bg-red-500", "bg-yellow-500", "bg-purple-500"], default: "bg-blue-500", bucket: "custom" },
+      { key: "color", label: "颜色", type: "select", options: ["bg-indigo-500", "bg-green-500", "bg-red-500", "bg-yellow-500", "bg-purple-500"], default: "bg-indigo-500", bucket: "custom" },
     ],
   },
   {
@@ -1749,21 +1776,21 @@ export const BUILTIN_DEFS: ComponentDef[] = [
     propsSchema: [
       { key: "iconName", label: "图标", type: "select", options: ["Heart", "Star", "Settings", "Home", "Search", "User", "Mail", "Phone", "Camera", "Music", "Video", "Image", "File", "Folder", "Trash", "Edit", "Copy", "Download", "Upload", "Share", "Bell", "Clock", "Calendar", "Map", "Globe", "Lock", "Unlock", "Eye", "EyeOff", "Sun", "Moon", "Cloud", "Zap", "Fire", "Gift", "Tag", "Bookmark", "Flag", "ThumbsUp", "MessageCircle", "Send", "Link", "Wifi", "Battery", "Volume", "Mic", "Play", "Pause", "SkipForward", "ArrowRight", "ArrowLeft", "ArrowUp", "ArrowDown", "Check", "X", "Plus", "Minus", "AlertTriangle", "Info", "HelpCircle"], default: "Heart", bucket: "custom" },
       { key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" },
-      { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-blue-600", "text-green-600", "text-red-600", "text-purple-600", "text-yellow-500", "text-pink-500", "text-white"], default: "text-gray-700", bucket: "custom" },
+      { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-indigo-600", "text-green-600", "text-red-600", "text-purple-600", "text-yellow-500", "text-pink-500", "text-white"], default: "text-gray-700", bucket: "custom" },
     ],
   },
   // 常用图标快捷条目（带预览）
-  { source: "builtin", id: "Icon-Heart", label: "心型", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-red-500", "text-pink-500", "text-gray-700", "text-blue-600"], default: "text-red-500", bucket: "custom" }] },
-  { source: "builtin", id: "Icon-Star", label: "星型", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-yellow-400", "text-gray-700", "text-blue-600"], default: "text-yellow-400", bucket: "custom" }] },
-  { source: "builtin", id: "Icon-Settings", label: "设置", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-blue-600", "text-green-600"], default: "text-gray-700", bucket: "custom" }] },
-  { source: "builtin", id: "Icon-Home", label: "主页", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-blue-600"], default: "text-gray-700", bucket: "custom" }] },
-  { source: "builtin", id: "Icon-Search", label: "搜索", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-blue-600"], default: "text-gray-700", bucket: "custom" }] },
-  { source: "builtin", id: "Icon-User", label: "用户", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-blue-600"], default: "text-gray-700", bucket: "custom" }] },
+  { source: "builtin", id: "Icon-Heart", label: "心型", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-red-500", "text-pink-500", "text-gray-700", "text-indigo-600"], default: "text-red-500", bucket: "custom" }] },
+  { source: "builtin", id: "Icon-Star", label: "星型", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-yellow-400", "text-gray-700", "text-indigo-600"], default: "text-yellow-400", bucket: "custom" }] },
+  { source: "builtin", id: "Icon-Settings", label: "设置", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-indigo-600", "text-green-600"], default: "text-gray-700", bucket: "custom" }] },
+  { source: "builtin", id: "Icon-Home", label: "主页", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-indigo-600"], default: "text-gray-700", bucket: "custom" }] },
+  { source: "builtin", id: "Icon-Search", label: "搜索", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-indigo-600"], default: "text-gray-700", bucket: "custom" }] },
+  { source: "builtin", id: "Icon-User", label: "用户", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-indigo-600"], default: "text-gray-700", bucket: "custom" }] },
   { source: "builtin", id: "Icon-Bell", label: "通知", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-yellow-500", "text-red-500"], default: "text-gray-700", bucket: "custom" }] },
-  { source: "builtin", id: "Icon-Mail", label: "邮件", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-blue-600"], default: "text-gray-700", bucket: "custom" }] },
-  { source: "builtin", id: "Icon-Camera", label: "相机", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-blue-600"], default: "text-gray-700", bucket: "custom" }] },
+  { source: "builtin", id: "Icon-Mail", label: "邮件", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-indigo-600"], default: "text-gray-700", bucket: "custom" }] },
+  { source: "builtin", id: "Icon-Camera", label: "相机", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-indigo-600"], default: "text-gray-700", bucket: "custom" }] },
   { source: "builtin", id: "Icon-Map", label: "地图", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-green-600"], default: "text-gray-700", bucket: "custom" }] },
-  { source: "builtin", id: "Icon-Clock", label: "时钟", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-blue-600"], default: "text-gray-700", bucket: "custom" }] },
+  { source: "builtin", id: "Icon-Clock", label: "时钟", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-gray-700", "text-indigo-600"], default: "text-gray-700", bucket: "custom" }] },
   { source: "builtin", id: "Icon-Zap", label: "闪电", category: "图标", propsSchema: [{ key: "iconSize", label: "尺寸", type: "number", default: 24, bucket: "custom" }, { key: "iconColor", label: "颜色", type: "select", options: ["text-yellow-500", "text-gray-700"], default: "text-yellow-500", bucket: "custom" }] },
   {
     source: "builtin",
@@ -1869,7 +1896,7 @@ export const BUILTIN_DEFS: ComponentDef[] = [
     category: "反馈",
     propsSchema: [
       { key: "spinnerSize", label: "尺寸", type: "number", default: 24, bucket: "custom" },
-      { key: "color", label: "颜色", type: "select", options: ["text-blue-500", "text-gray-500", "text-green-500", "text-red-500", "text-purple-500"], default: "text-blue-500", bucket: "custom" },
+      { key: "color", label: "颜色", type: "select", options: ["text-indigo-500", "text-gray-500", "text-green-500", "text-red-500", "text-purple-500"], default: "text-indigo-500", bucket: "custom" },
     ],
   },
   {

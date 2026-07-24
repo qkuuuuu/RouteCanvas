@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import { motion } from "framer-motion";
+import { Heart, PartyPopper } from "lucide-react";
 
 export interface PackComponentProps {
   text?: string;
@@ -34,10 +35,10 @@ export const ShimmerButton: React.FC<PackComponentProps> = (props) => {
     <motion.button
       whileTap={interactive ? { scale: 0.96 } : undefined}
       onClick={interactive ? onTrigger : undefined}
-      className={`relative w-full h-full overflow-hidden rounded-xl px-4 py-2 font-medium text-white ${sizeMap[size]}`}
-      style={{ background: "#0f172a" }}
+      className={`relative w-full h-full overflow-hidden rounded-xl px-4 py-2 font-semibold text-white ${sizeMap[size]}`}
+      style={{ background: "linear-gradient(135deg, #0f172a, #1e293b)" }}
     >
-      <span className="relative z-10">{text ?? "Shimmer"}</span>
+      <span className="relative z-10">{text ?? "立即开始"}</span>
       <motion.span
         className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent"
         animate={{ x: ["-100%", "200%"] }}
@@ -54,17 +55,18 @@ export const GradientText: React.FC<PackComponentProps> = (props) => {
   const color = useColor(props);
   const speed = useSpeed(props, 3);
   return (
-    <span
-      className="w-full inline-block bg-clip-text text-transparent font-bold text-lg text-center"
-      style={{ backgroundImage: `linear-gradient(to right, ${color}, #ec4899, ${color})`, backgroundSize: "200% auto" }}
-    >
+    <span className="w-full inline-block text-center">
       <motion.span
+        className="inline-block bg-clip-text text-transparent font-extrabold tracking-tight text-2xl"
+        style={{
+          backgroundImage: `linear-gradient(to right, ${color}, #ec4899, ${color})`,
+          backgroundSize: "200% auto",
+          WebkitBackgroundClip: "text",
+        }}
         animate={{ backgroundPosition: ["0% 50%", "200% 50%"] }}
         transition={{ duration: 3 / speed, repeat: Infinity, ease: "linear" }}
-        style={{ backgroundClip: "text", WebkitBackgroundClip: "text" }}
-        className="inline-block"
       >
-        {text ?? "Gradient Text"}
+        {text ?? "渐变标题"}
       </motion.span>
     </span>
   );
@@ -96,10 +98,10 @@ export const CardHover: React.FC<PackComponentProps> = ({ text, interactive, onT
         rotateX: rotate.x,
         rotateY: rotate.y,
       }}
-      className="w-full h-full rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-4 shadow-lg flex flex-col items-center justify-center"
+      className="w-full h-full rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-gray-50 p-4 shadow-[0_12px_36px_rgba(15,23,42,0.10)] flex flex-col items-center justify-center"
     >
-      <div className="text-sm font-semibold text-gray-800">{text ?? "Hover Card"}</div>
-      <div className="text-[10px] text-gray-400 mt-1">Move to tilt</div>
+      <div className="text-sm font-semibold text-gray-900">{text ?? "悬浮卡片"}</div>
+      <div className="text-[10px] text-gray-400 mt-1">移动鼠标查看 3D 倾斜</div>
     </motion.div>
   );
 };
@@ -111,7 +113,7 @@ export const LoadingDots: React.FC<PackComponentProps> = () => {
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
-          className="h-2.5 w-2.5 rounded-full bg-blue-500"
+          className="h-2.5 w-2.5 rounded-full bg-indigo-500"
           animate={{ scale: [1, 1.4, 1], opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }}
         />
@@ -133,22 +135,23 @@ export const SpotlightCard: React.FC<PackComponentProps> = ({ text, interactive,
         setPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
       }}
       onClick={interactive ? onTrigger : undefined}
-      className="relative w-full h-full overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-4 group cursor-pointer"
+      className="relative w-full h-full overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 group cursor-pointer shadow-[0_8px_30px_rgba(15,23,42,0.06)]"
     >
       <div
         className="pointer-events-none absolute -inset-px opacity-0 group-hover:opacity-100 transition-opacity"
         style={{
-          background: `radial-gradient(200px circle at ${pos.x}px ${pos.y}px, rgba(59,130,246,0.15), transparent 80%)`,
+          background: `radial-gradient(200px circle at ${pos.x}px ${pos.y}px, rgba(99,102,241,0.13), transparent 80%)`,
         }}
       />
-      <div className="relative z-10 text-sm font-medium text-gray-700">{text ?? "Spotlight"}</div>
+      <div className="relative z-10 text-sm font-semibold text-gray-900">{text ?? "聚光灯卡片"}</div>
+      <div className="relative z-10 text-xs text-gray-400 mt-1">移动鼠标查看聚光效果</div>
     </div>
   );
 };
 
 /* ---------- AnimatedText (letter stagger) ---------- */
 export const AnimatedText: React.FC<PackComponentProps> = ({ text }) => {
-  const chars = (text ?? "Animated").split("");
+  const chars = (text ?? "动画标题").split("");
   return (
     <div className="w-full h-full flex items-center justify-center overflow-hidden">
       {chars.map((char, i) => (
@@ -157,7 +160,7 @@ export const AnimatedText: React.FC<PackComponentProps> = ({ text }) => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.04, duration: 0.3 }}
-          className="inline-block text-sm font-semibold text-gray-800"
+          className="inline-block text-xl font-extrabold tracking-tight text-gray-900"
         >
           {char === " " ? "\u00A0" : char}
         </motion.span>
@@ -168,7 +171,7 @@ export const AnimatedText: React.FC<PackComponentProps> = ({ text }) => {
 
 /* ---------- Typewriter ---------- */
 export const Typewriter: React.FC<PackComponentProps> = ({ text }) => {
-  const full = text ?? "Hello World";
+  const full = text ?? "你好，世界";
   const [display, setDisplay] = React.useState("");
   React.useEffect(() => {
     let i = 0;
@@ -188,18 +191,23 @@ export const Typewriter: React.FC<PackComponentProps> = ({ text }) => {
 };
 
 /* ---------- PulseButton ---------- */
-export const PulseButton: React.FC<PackComponentProps> = ({ text, interactive, onTrigger }) => (
-  <div className="w-full h-full flex items-center justify-center">
-    <motion.button
-      onClick={interactive ? onTrigger : undefined}
-      className="relative px-5 py-2.5 rounded-full bg-blue-600 text-white text-sm font-medium"
-      animate={{ boxShadow: ["0 0 0 0 rgba(59,130,246,0.4)", "0 0 0 12px rgba(59,130,246,0)", "0 0 0 0 rgba(59,130,246,0)"] }}
-      transition={{ duration: 1.5, repeat: Infinity }}
-    >
-      {text ?? "Pulse"}
-    </motion.button>
-  </div>
-);
+export const PulseButton: React.FC<PackComponentProps> = (props) => {
+  const { text, interactive, onTrigger } = props;
+  const color = useColor(props);
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <motion.button
+        onClick={interactive ? onTrigger : undefined}
+        className="relative px-5 py-2.5 rounded-full text-white text-sm font-semibold"
+        style={{ background: `linear-gradient(135deg, ${color}, #4f46e5)` }}
+        animate={{ boxShadow: [`0 0 0 0 ${color}66`, `0 0 0 14px ${color}00`, `0 0 0 0 ${color}00`] }}
+        transition={{ duration: 1.6, repeat: Infinity }}
+      >
+        {text ?? "立即体验"}
+      </motion.button>
+    </div>
+  );
+};
 
 /* ---------- CountUp ---------- */
 export const CountUp: React.FC<PackComponentProps> = ({ text }) => {
@@ -224,7 +232,7 @@ export const CountUp: React.FC<PackComponentProps> = ({ text }) => {
 
 /* ---------- Marquee ---------- */
 export const Marquee: React.FC<PackComponentProps> = ({ text }) => {
-  const content = text ?? "React Bits • Amazing Components • ";
+  const content = text ?? "极速性能 • 精美设计 • 开箱即用 • 值得信赖 • ";
   return (
     <div className="w-full h-full flex items-center overflow-hidden">
       <motion.div
@@ -271,8 +279,8 @@ export const RippleButton: React.FC<PackComponentProps> = ({ text, interactive, 
     if (interactive) onTrigger?.();
   };
   return (
-    <button onClick={onClick} className="relative w-full h-full overflow-hidden rounded-lg bg-indigo-600 text-white text-sm font-medium">
-      {text ?? "Ripple"}
+    <button onClick={onClick} className="relative w-full h-full overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25">
+      {text ?? "点击涟漪"}
       {ripples.map((r) => (
         <motion.span
           key={r.id}
@@ -292,13 +300,13 @@ export const ParticlesBg: React.FC<PackComponentProps> = ({ text }) => (
     {Array.from({ length: 20 }).map((_, i) => (
       <motion.span
         key={i}
-        className="absolute w-1 h-1 rounded-full bg-blue-400"
+        className="absolute w-1 h-1 rounded-full bg-indigo-400"
         style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}
         animate={{ y: [0, -20, 0], opacity: [0.2, 0.8, 0.2] }}
         transition={{ duration: 2 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 2 }}
       />
     ))}
-    <span className="relative z-10 text-sm font-semibold text-white">{text ?? "Particles"}</span>
+    <span className="relative z-10 text-sm font-semibold text-white">{text ?? "粒子背景"}</span>
   </div>
 );
 
@@ -368,12 +376,12 @@ export const NeonButton: React.FC<PackComponentProps> = ({ text, interactive, on
   <div className="w-full h-full flex items-center justify-center">
     <motion.button
       onClick={interactive ? onTrigger : undefined}
-      className="px-5 py-2 rounded-lg border-2 border-cyan-400 text-cyan-400 text-sm font-bold bg-transparent"
-      whileHover={{ boxShadow: "0 0 20px rgba(34,211,238,0.6), inset 0 0 20px rgba(34,211,238,0.1)", textShadow: "0 0 8px rgba(34,211,238,0.8)" }}
-      animate={{ boxShadow: ["0 0 5px rgba(34,211,238,0.3)", "0 0 15px rgba(34,211,238,0.5)", "0 0 5px rgba(34,211,238,0.3)"] }}
+      className="px-5 py-2 rounded-lg border-2 border-indigo-400 text-indigo-400 text-sm font-bold bg-transparent"
+      whileHover={{ boxShadow: "0 0 20px rgba(129,140,248,0.6), inset 0 0 20px rgba(129,140,248,0.1)", textShadow: "0 0 8px rgba(129,140,248,0.8)" }}
+      animate={{ boxShadow: ["0 0 5px rgba(129,140,248,0.3)", "0 0 15px rgba(129,140,248,0.5)", "0 0 5px rgba(129,140,248,0.3)"] }}
       transition={{ duration: 2, repeat: Infinity }}
     >
-      {text ?? "Neon"}
+      {text ?? "霓虹按钮"}
     </motion.button>
   </div>
 );
@@ -425,8 +433,8 @@ export const Orbit: React.FC<PackComponentProps> = ({ text }) => (
   <div className="w-full h-full flex items-center justify-center">
     <div className="relative w-16 h-16">
       <div className="absolute inset-0 rounded-full border border-gray-200" />
-      <motion.div className="absolute w-3 h-3 rounded-full bg-blue-500 -top-1.5 left-1/2 -ml-1.5" animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }} style={{ transformOrigin: "50% 38px" }} />
-      <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-gray-700">{text ?? "Orbit"}</div>
+      <motion.div className="absolute w-3 h-3 rounded-full bg-indigo-500 -top-1.5 left-1/2 -ml-1.5" animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }} style={{ transformOrigin: "50% 38px" }} />
+      <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-gray-700">{text ?? "轨道"}</div>
     </div>
   </div>
 );
@@ -446,8 +454,8 @@ export const MagneticButton: React.FC<PackComponentProps> = ({ text, interactive
 export const BorderBeam: React.FC<PackComponentProps> = ({ text }) => (
   <div className="w-full h-full flex items-center justify-center p-2">
     <div className="relative w-full h-full rounded-xl border border-gray-200 flex items-center justify-center overflow-hidden">
-      <motion.div className="absolute w-12 h-0.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent" animate={{ top: ["0%", "100%"], left: ["0%", "80%"] }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }} />
-      <span className="text-xs font-medium text-gray-600">{text ?? "Beam"}</span>
+      <motion.div className="absolute w-12 h-0.5 bg-gradient-to-r from-transparent via-indigo-500 to-transparent" animate={{ top: ["0%", "100%"], left: ["0%", "80%"] }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }} />
+      <span className="text-xs font-medium text-gray-600">{text ?? "光束边框"}</span>
     </div>
   </div>
 );
@@ -455,8 +463,8 @@ export const BorderBeam: React.FC<PackComponentProps> = ({ text }) => (
 /* ---------- BreathingCircle ---------- */
 export const BreathingCircle: React.FC<PackComponentProps> = ({ text }) => (
   <div className="w-full h-full flex items-center justify-center">
-    <motion.div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center" animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
-      <span className="text-[9px] text-white font-bold">{text ?? "Breathe"}</span>
+    <motion.div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-400 to-pink-500 flex items-center justify-center" animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
+      <span className="text-[9px] text-white font-bold">{text ?? "呼吸"}</span>
     </motion.div>
   </div>
 );
@@ -475,7 +483,7 @@ export const TypingIndicator: React.FC<PackComponentProps> = () => (
 /* ---------- RainbowButton ---------- */
 export const RainbowButton: React.FC<PackComponentProps> = ({ text, interactive, onTrigger }) => (
   <div className="w-full h-full flex items-center justify-center">
-    <motion.button onClick={interactive ? onTrigger : undefined} className="px-4 py-2 rounded-lg text-white text-sm font-bold" style={{ background: "linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00)", backgroundSize: "400% 100%" }} animate={{ backgroundPosition: ["0% 50%", "100% 50%"] }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }}>{text ?? "Rainbow"}</motion.button>
+    <motion.button onClick={interactive ? onTrigger : undefined} className="px-4 py-2 rounded-lg text-white text-sm font-bold shadow-lg shadow-indigo-500/25" style={{ background: "linear-gradient(90deg, #6366f1, #ec4899, #8b5cf6, #6366f1)", backgroundSize: "300% 100%" }} animate={{ backgroundPosition: ["0% 50%", "100% 50%"] }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }}>{text ?? "流光溢彩"}</motion.button>
   </div>
 );
 
@@ -529,9 +537,9 @@ export const SplitText: React.FC<PackComponentProps> = ({ text }) => {
 /* ---------- HoverLink ---------- */
 export const HoverLink: React.FC<PackComponentProps> = ({ text }) => (
   <div className="w-full h-full flex items-center justify-center">
-    <span className="relative text-sm font-medium text-blue-600 cursor-pointer group">
-      {text ?? "Hover Link"}
-      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full" />
+    <span className="relative text-sm font-medium text-indigo-600 cursor-pointer group">
+      {text ?? "悬浮链接"}
+      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-indigo-600 transition-all duration-300 group-hover:w-full" />
     </span>
   </div>
 );
@@ -539,7 +547,7 @@ export const HoverLink: React.FC<PackComponentProps> = ({ text }) => (
 /* ---------- AnimatedDivider ---------- */
 export const AnimatedDivider: React.FC<PackComponentProps> = () => (
   <div className="w-full h-full flex items-center justify-center px-4">
-    <motion.div className="h-0.5 w-full bg-gradient-to-r from-transparent via-blue-500 to-transparent" animate={{ scaleX: [0.3, 1, 0.3] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} />
+    <motion.div className="h-0.5 w-full bg-gradient-to-r from-transparent via-indigo-500 to-transparent" animate={{ scaleX: [0.3, 1, 0.3] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} />
   </div>
 );
 
@@ -549,7 +557,7 @@ export const ConfettiBurst: React.FC<PackComponentProps> = ({ text }) => (
     {["#f43f5e", "#3b82f6", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899"].map((c, i) => (
       <motion.span key={i} className="absolute w-2 h-2 rounded-sm" style={{ background: c }} animate={{ y: [0, -40 - Math.random() * 30], x: [(Math.random() - 0.5) * 60], opacity: [1, 0], rotate: [0, 360] }} transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }} />
     ))}
-    <span className="text-xs font-bold text-gray-700">{text ?? "🎉"}</span>
+    <span className="text-amber-500">{text ? <span className="text-xs font-bold text-gray-700">{text}</span> : <PartyPopper size={18} />}</span>
   </div>
 );
 
@@ -577,15 +585,15 @@ export const SlideText: React.FC<PackComponentProps> = ({ text }) => (
 /* ---------- HeartBeat ---------- */
 export const HeartBeat: React.FC<PackComponentProps> = ({ text }) => (
   <div className="w-full h-full flex items-center justify-center">
-    <motion.span className="text-2xl" animate={{ scale: [1, 1.3, 1, 1.3, 1] }} transition={{ duration: 1.2, repeat: Infinity }}>❤️</motion.span>
-    <span className="ml-1 text-xs text-gray-500">{text ?? "Like"}</span>
+    <motion.span animate={{ scale: [1, 1.3, 1, 1.3, 1] }} transition={{ duration: 1.2, repeat: Infinity }}><Heart size={22} className="text-rose-500" fill="currentColor" /></motion.span>
+    <span className="ml-1 text-xs text-gray-500">{text ?? "点赞"}</span>
   </div>
 );
 
 /* ---------- SpinnerRing ---------- */
 export const SpinnerRing: React.FC<PackComponentProps> = () => (
   <div className="w-full h-full flex items-center justify-center">
-    <motion.div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-blue-500" animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }} />
+    <motion.div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-indigo-500" animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }} />
   </div>
 );
 
@@ -617,7 +625,7 @@ export const MorphBtn: React.FC<PackComponentProps> = ({ text, interactive, onTr
         animate={morphed ? { width: 40, height: 40, borderRadius: "50%", background: "#22c55e" } : { width: 120, height: 40, borderRadius: 12, background: "#6366f1" }}
         transition={{ duration: 0.4, ease: "easeInOut" }}
         onClick={() => { setMorphed(!morphed); interactive && onTrigger?.(); }}
-      >{morphed ? "✓" : (text ?? "Submit")}</motion.button>
+      >{morphed ? "✓" : (text ?? "提交")}</motion.button>
     </div>
   );
 };
