@@ -41,7 +41,7 @@ export function CanvasManagerDialog({
     const id = createCanvas();
     switchCanvas(id);
     refresh();
-    toast.success("新画布已创建");
+    toast.success("新项目已创建");
   };
 
   const onSwitch = (id: string) => {
@@ -62,13 +62,13 @@ export function CanvasManagerDialog({
     deleteCanvas(id);
     setConfirmDelete(null);
     refresh();
-    toast.success("画布已删除");
+    toast.success("项目已删除");
   };
 
   const onDuplicate = (id: string) => {
     duplicateCanvas(id);
     refresh();
-    toast.success("画布已复制");
+    toast.success("项目已复制");
   };
 
   return (
@@ -77,7 +77,7 @@ export function CanvasManagerDialog({
         <div className="px-4 py-2.5 border-b flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FolderOpen size={16} className="text-blue-600" />
-            <span className="text-sm font-semibold">画布管理</span>
+            <span className="text-sm font-semibold">项目管理</span>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={onNew} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700">
@@ -91,7 +91,7 @@ export function CanvasManagerDialog({
 
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
           {list.length === 0 && (
-            <div className="text-center text-xs text-gray-400 py-8">暂无画布</div>
+            <div className="text-center text-xs text-gray-400 py-8">暂无项目</div>
           )}
           {list.map((c) => (
             <div

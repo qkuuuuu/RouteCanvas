@@ -15,4 +15,15 @@ body {
     Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
+.component-scrollbar {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.component-scrollbar::-webkit-scrollbar { width: 10px; }
+.component-scrollbar::-webkit-scrollbar-track { background: #f8fafc; }
+.component-scrollbar::-webkit-scrollbar-thumb { background: #aeb8c5; border: 2px solid #f8fafc; border-radius: 10px; }
+.component-scrollbar::-webkit-scrollbar-thumb:hover { background: #8793a3; }
+
 /* React Flow base styles are imported via 'reactflow/dist/style.css' in components */

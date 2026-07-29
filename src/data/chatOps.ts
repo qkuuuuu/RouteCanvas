@@ -20,6 +20,18 @@ export interface ChatAiResponse {
   operations?: ChatOp[];
 }
 
+export function describeOperation(op: ChatOp): string {
+  switch (op.op) {
+    case "add_page": return `新增页面：${op.name} (${op.path})`;
+    case "add_node": return `添加 ${op.type} 到 ${op.pageRef ?? op.pageId ?? "目标页面"}`;
+    case "update_node": return `更新节点 ${op.nodeRef ?? op.nodeId ?? "未知节点"}`;
+    case "remove_node": return `删除节点 ${op.nodeRef ?? op.nodeId ?? "未知节点"}`;
+    case "connect": return `创建 ${op.mode ?? "navigate"} 交互连线`;
+    case "remove_page": return `删除页面 ${op.pageRef ?? op.pageId ?? "未知页面"}`;
+    case "set_canvas": return "整体替换画布";
+  }
+}
+
 /* ---------- ref 解析上下文 ---------- */
 interface RefCtx {
   pages: Map<string, string>; // ref -> pageId

@@ -37,6 +37,7 @@ function buildCanvasContext(state: CanvasState): string {
         text: n.props?.text,
         position: n.position,
         size: n.size,
+        note: n.note,
       })),
     })),
     transitions: state.transitions.map((t) => ({

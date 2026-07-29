@@ -1,95 +1,108 @@
-# RouteCanvas
+# RouteCanvas V1.1
 
-> 无限画布 UI 流程与 JSON 协同工作台
+> AI 对话生成、无限画布编辑与页面流程设计，统一在一个前端工作台中。
 
-RouteCanvas 是一款基于浏览器的可视化页面设计工具，通过**无限画布 + 组件拖拽 + 连线跳转**的方式，快速搭建多页面应用原型，并导出结构化 JSON 供 AI 或开发者直接消费。
+RouteCanvas 是一个面向产品设计与前端原型的浏览器工作台。你可以从空白项目或设计模板开始，让 AI 生成页面雏形，再在同一项目的无限画布中编辑多个页面、配置按钮跳转、检查交互流程，并导出可由 AI 或开发工具继续消费的结构化数据。
 
-**核心差异化能力：**
-- **MCP Server 实时共编** — AI Agent（Cursor / Claude / Qoder）通过 MCP 协议直接读写画布，无需导出步骤
-- **万能解析引擎** — 粘贴 HTML / React TSX / Vue / Svelte 代码，自动拆解为字段级可编辑画布节点
-- **画笔交互** — 框选 + 涂画 + 文字指令，AI 局部精修 / 手绘生成真实组件
+![RouteCanvas V1.1 首页](docs/images/v1.1-home.png)
 
----
+## V1.1 更新
 
-## 功能亮点
+- **AI-first 工作区**：左侧项目与模板入口、中部 AI 设计会话、右侧项目画布按需展开。
+- **真正的多页面无限画布**：项目内所有页面同时可见，可自由平移、缩放和拖动画板；页面下拉框只负责定位，不会隐藏其他页面。
+- **设计与流程联动**：在组件属性中设置点击目标后，交互流程会立即生成对应连接；流程视图也能继续编辑触发组件、目标页面、动作和守卫。
+- **项目与模板语义清晰**：模板用于创建独立项目，不再把不相关页面混入当前画布；支持品牌官网、产品发布、SaaS、数据工作台和移动应用分类。
+- **全局 AI Agent**：顶部统一配置 OpenAI 或兼容接口的 Base URL、模型和 API Key，AI 会话内不再重复出现 Key 设置。
+- **更顺手的编辑体验**：组件库可完整滚动，工具栏与页面切换更紧凑，并支持文字、图片、注释、截图标记与 AI 局部修改。
+
+## 核心工作流
+
+RouteCanvas 的层级关系是：**工作区 → 项目 → 无限画布 → 多个页面 → 页面间交互**。
+
+1. 从模板库创建项目，或点击“新建设计”创建空白项目。
+2. 在右侧画布顶部点击 `+`，把新页面加入当前项目；新页面会自动排列在已有页面右侧。
+3. 拖动画板标题调整页面位置；拖动画布空白处、按住空格或使用鼠标中键平移；滚轮平移，`Ctrl/Cmd + 滚轮` 缩放。
+4. 从组件库拖入组件，在属性面板修改文字、图片、布局、样式、注释与响应式参数。
+5. 选中按钮等组件，在“点击交互”中选择目标页面；切换到“交互流程”检查或修改完整页面路径。
+6. 点击“预览”验证实际跳转或滚动续页效果。
+
+## 无限画布与页面交互
+
+![RouteCanvas 多页面无限画布](docs/images/v1.1-infinite-canvas.png)
+
+上图中 `Atelier Noir` 与 `案例详情` 是同一个项目里的两个独立页面。顶部页面选择器用于快速聚焦，两个画板仍始终存在于同一空间。右侧面板正在编辑“查看案例”按钮到“案例详情”的页面跳转。
+
+![RouteCanvas 交互流程](docs/images/v1.1-flow.png)
+
+流程视图采用紧凑自动排布，将组件动作映射为页面连接。选中连接后可以修改触发组件、目标页面、跳转或滚动动作、触发事件、参数与登录守卫。
+
+## 主要能力
 
 | 能力 | 说明 |
-|------|------|
-| 无限画布 | 基于 React Flow，自由缩放/平移，多页面画板并排布局 |
-| 组件拖拽 | 左侧组件库拖入画板，支持 200+ 内置/第三方组件 |
-| 连线跳转 | 组件 → 页面连线定义交互跳转，支持事件/参数/守卫 |
-| 滚动续页 | 连线模式切换为“滚动续页”，多页合并为 PPT 式滚动长页 |
-| **万能解析引擎** | 粘贴 HTML/TSX/Vue/Svelte 代码 → 自动拆解为可编辑节点 |
-| **MCP Server** | 13 个工具，AI Agent 直接读写画布（get_canvas / add_node / import_code 等） |
-| **智能导入** | 工具栏一键导入，自动检测格式，iframe 精确解析 + 节点预览 |
-| 属性编辑 | 右侧面板编辑文本、颜色、动画速度等组件属性 |
-| 富编辑原语 | Container/Text 支持渐变/玻璃/阴影/渐变文字等 20+ 视觉字段 |
-| 自由缩放 | 选中组件后拖拽边角自由调整尺寸 |
-| 层级管理 | zIndex 置顶/置底/上移/下移 |
-| 画笔工具 | 自由绘制/直线/矩形/椭圆/箭头/三角形 + AI 草图生成 |
-| AI 区域精修 | 框选多个组件 + 涂画标注 + 文字指令，AI 局部修改 |
-| AI 设计助手 | 内置 Chat 面板，对话式修改画布 |
-| 撤销重做 | Ctrl+Z / Ctrl+Shift+Z，最多 80 步历史 |
-| 多画布管理 | 创建/切换/删除多个画布项目 |
-| 实时预览 | 一键打开预览页，模拟真实交互跳转与滚动 |
-| JSON 导入导出 | 结构化文档，可版本管理、跨设备迁移 |
-| 组件市场 | 在线安装第三方组件包（Runtime 沙箱渲染） |
-| 悬停预览 | 组件库中悬停即可实时预览组件效果 |
-
----
-
-## 技术栈
-
-- **框架**: Next.js 14 (App Router) + React 18 + TypeScript
-- **画布**: @xyflow/react (React Flow 12)
-- **状态管理**: Zustand + zundo (撤销/重做)
-- **MCP Server**: @modelcontextprotocol/sdk + Zod
-- **动画**: Framer Motion
-- **3D**: Three.js + @react-three/fiber + @react-three/drei
-- **样式**: Tailwind CSS
-- **图标**: Lucide React
-
----
+| --- | --- |
+| AI 设计会话 | 对话生成页面雏形、展示变更清单，并支持确认后应用 |
+| 无限画布 | 多画板并排、自由平移缩放、拖动画板、自动放置新页面 |
+| 页面流程 | 自动排布页面关系，配置跳转、滚动续页、参数与守卫 |
+| 可视化编辑 | 拖拽组件，编辑文字、图片、样式、布局、层级和响应式参数 |
+| 注释与标记 | 保存设计意图，截图标记局部区域并交给 AI 修改 |
+| 模板库 | 按场景筛选高完成度模板，并从模板创建独立项目 |
+| 组件生态 | 内置基础、表单、Dashboard、Shadcn、Magic UI、Aceternity、React Bits、3D 等组件 |
+| 代码导入 | 解析 HTML、React TSX、Vue SFC 与 Svelte，生成可编辑节点 |
+| 数据协同 | JSON 导入导出、浏览器本地存储、MCP 双向同步 |
+| 实时预览 | 在预览模式中验证页面跳转与滚动交互 |
 
 ## 快速开始
 
 ### 环境要求
 
 - Node.js 18+
-- npm 或 pnpm
+- npm
 
-### 安装与启动
+### 本地运行
 
 ```bash
-# 克隆项目
 git clone <repo-url>
 cd RouteCanvas
-
-# 安装依赖
 npm install
-
-# 启动开发服务器
 npm run dev
 ```
 
-启动后访问 **http://localhost:3000**
+打开 [http://localhost:3000](http://localhost:3000)。
 
-### 构建生产版本
+### 生产构建
 
 ```bash
 npm run build
 npm start
 ```
 
----
+## AI Agent 配置
 
-## MCP Server（AI 实时共编）
+点击项目工具栏中“预览”旁的 **AI Agent** 按钮，统一配置：
 
-RouteCanvas 内置 MCP Server，支持 Cursor / Claude Desktop / Qoder 等 IDE 直接读写画布。
+- Base URL，例如 `https://api.openai.com/v1`
+- 模型，例如 `gpt-4o-mini`
+- API Key
 
-### 配置
+前端填写的配置保存在当前浏览器的 `localStorage` 中，请只在可信设备上使用。部署方也可以通过环境变量预设服务端 Key：
 
-项目已包含 `.cursor/mcp.json`，IDE 重新加载窗口即可发现：
+```bash
+OPENAI_API_KEY=your_api_key
+```
+
+用户在全局 AI Agent 中填写的 Key 优先于环境变量。Base URL 支持 OpenAI-compatible API。
+
+## MCP Server
+
+RouteCanvas 内置 MCP Server，让支持 MCP 的 AI 开发工具直接读取和修改 `canvas.json`，包括获取画布、管理页面与节点、创建连接、注册组件和导入前端代码。
+
+```bash
+cd mcp
+npm install
+npm run build
+```
+
+仓库已提供 `.cursor/mcp.json` 示例配置：
 
 ```json
 {
@@ -98,174 +111,40 @@ RouteCanvas 内置 MCP Server，支持 Cursor / Claude Desktop / Qoder 等 IDE �
       "command": "node",
       "args": ["mcp/dist/index.js"],
       "cwd": "${workspaceFolder}",
-      "env": { "ROUTECANVAS_FILE": "${workspaceFolder}/canvas.json" }
+      "env": {
+        "ROUTECANVAS_FILE": "${workspaceFolder}/canvas.json"
+      }
     }
   }
 }
 ```
 
-### 工具列表（13 个）
+## 技术栈
 
-| 工具 | 说明 |
-|------|------|
-| `get_canvas` | 获取完整画布 JSON |
-| `list_components` | 列出可用组件 |
-| `register_component` | 注册自定义组件 |
-| `unregister_component` | 删除自定义组件 |
-| `get_page` | 获取单页详情 |
-| `add_page` | 新建页面 |
-| `add_node` | 添加节点 |
-| `update_node` | 修改节点属性/位置/尺寸 |
-| `remove_node` | 删除节点 |
-| `connect` | 创建页面间连线 |
-| `remove_page` | 删除页面 |
-| `set_canvas` | 整体替换画布 |
-| **`import_code`** | **万能解析：前端代码 → 可编辑画布节点** |
-
-### 万能解析引擎
-
-在对话中说“解析这个”/“导入项目”，AI 自动调用 `import_code`：
-
-```
-用户：“帮我把这段代码导入画布”
-  ↓
-AI 调用 import_code(code, pageId)
-  ↓
-服务端解析 → 节点写入 canvas.json
-  ↓
-编辑器 mcpSync 轮询检测 → 画布实时渲染新节点
-```
-
-支持格式：**HTML/CSS**、**React TSX**、**Vue SFC**、**Svelte**
-
-精度分层：
-- 客户端 iframe（有 computedStyle + boundingBox）→ 最精确
-- 服务端正则解析（Node.js 无 DOM）→ best-effort，AI 可用 update_node 微调
-
----
+- Next.js 14、React 18、TypeScript
+- Zustand、zundo
+- React Flow 12
+- Tailwind CSS、Framer Motion、Lucide React
+- Three.js、React Three Fiber
+- Model Context Protocol SDK、Zod
 
 ## 项目结构
 
-```
+```text
 src/
-├── app/                    # Next.js App Router 页面
-│   ├── page.tsx            # 编辑器入口
-│   ├── preview/            # 预览页
-│   └── api/                # API 路由 (AI / 解析 / 导入 / 文档)
-├── canvas/                 # 画布核心
-│   ├── ReactFlowCanvas.tsx # React Flow 画布主组件
-│   ├── Editor.tsx          # 编辑器布局
-│   ├── rfAdapter.ts        # Store ↔ React Flow 适配层
-│   ├── AiAnnotateOverlay.tsx # AI 框选精修标注层
-│   ├── nodes/              # 自定义节点 (PageBoard / UINode)
-│   └── edges/              # 自定义边 (TransitionEdge)
-├── components/             # 组件系统
-│   ├── builtin/            # 内置基础组件 (40+)
-│   ├── packs/              # 组件包
-│   │   ├── aceternity/     # Aceternity UI (54 组件)
-│   │   ├── react-bits/     # React Bits (60+ 组件)
-│   │   ├── shadcn/         # Shadcn 风格 (25 组件)
-│   │   ├── uiverse/        # Uiverse CSS 组件 (20 组件)
-│   │   ├── dashboard/      # 仪表盘组件 (20 组件)
-│   │   ├── anim-bg/        # 动画背景 (20 组件)
-│   │   ├── 3d-effects/     # 3D 效果 (20 组件)
-│   │   ├── magic-ui/       # Magic UI
-│   │   └── r3f-scenes/     # R3F 3D 场景
-│   ├── import/             # 智能导入对话框
-│   ├── market/             # 组件市场
-│   ├── renderer.tsx        # 统一组件渲染器
-│   ├── registry.ts         # 组件注册表
-│   └── sandbox/            # 运行时沙箱 (CSS / Babel)
-├── panels/                 # 面板
-│   ├── Toolbar.tsx         # 顶部工具栏
-│   ├── ComponentLibrary.tsx# 左侧组件库
-│   └── PropertyPanel.tsx   # 右侧属性面板
-├── preview/                # 预览系统
-│   ├── PreviewApp.tsx      # 预览渲染 (含 scroll-snap)
-│   └── router.ts           # 预览路由逻辑
-├── store/                  # 状态管理
-│   └── canvasStore.ts      # Zustand 主 Store
-├── data/                   # 数据层
-│   ├── serializer.ts       # JSON 导入/导出/校验
-│   ├── chatOps.ts          # AI Chat 操作执行器
-│   └── promptTemplate.ts   # AI Prompt 模板
-├── lib/                    # 工具函数
-│   ├── parser/             # 万能解析引擎
-│   │   ├── normalize.ts    # 多格式归一化 (HTML/TSX/Vue/Svelte)
-│   │   ├── iframeRenderer.ts # 客户端 iframe 精确解析
-│   │   ├── parseEngine.ts  # DOM 遍历 → 节点生成
-│   │   ├── elementMapper.ts # 元素→类型映射规则
-│   │   └── styleExtractor.ts # 样式提取工具
-│   ├── canvasManager.ts    # 多画布管理
-│   ├── mcpSync.ts          # MCP 文件同步 (canvas.json 双向)
-│   └── id.ts               # ID 生成器
-└── types/                  # TypeScript 类型
-    └── schema.ts           # 核心 JSON Schema 定义
+├── app/          # 页面、预览与 API 路由
+├── canvas/       # 编辑器、流程图与标注层
+├── design/       # 多画板无限画布
+├── components/   # 组件系统、模板渲染与全局对话框
+├── panels/       # AI 会话、工具栏、组件库与属性面板
+├── store/        # 画布和工作区状态
+├── data/         # 模板、序列化与 AI 操作
+├── lib/          # AI 配置、解析器、MCP 与项目管理
+└── types/        # 核心 Schema
 
-mcp/                        # MCP Server (独立 Node.js 服务)
-├── src/
-│   ├── index.ts            # 13 个 MCP 工具入口
-│   ├── htmlParser.ts       # 服务端解析器 (import_code)
-│   ├── components.ts       # 组件校验
-│   └── canvasStore.ts      # canvas.json 读写
-└── package.json
+mcp/              # 独立 MCP Server
+docs/images/      # README 演示截图
 ```
-
----
-
-## 导出 JSON Schema
-
-```jsonc
-{
-  "meta": {
-    "schemaVersion": "1.0.0",
-    "canvasName": "我的项目",
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z",
-    "viewport": { "x": 0, "y": 0, "zoom": 1 }
-  },
-  "pages": [
-    {
-      "id": "page_xxx",
-      "name": "首页",
-      "route": { "path": "/", "isIndex": true },
-      "layout": { "x": 120, "y": 120, "width": 800, "height": 600 },
-      "nodes": [
-        {
-          "id": "node_xxx",
-          "type": "Button",
-          "position": { "x": 40, "y": 40 },
-          "size": { "width": 120, "height": 40 },
-          "props": { "text": "点击我", "custom": { "color": "#6366f1" } },
-          "zIndex": 1
-        }
-      ]
-    }
-  ],
-  "transitions": [
-    {
-      "id": "trans_xxx",
-      "source": { "pageId": "page_xxx", "nodeId": "node_xxx", "event": "onClick" },
-      "target": { "pageId": "page_yyy", "params": { "id": "${item.id}" } },
-      "mode": "navigate",       // "navigate" | "scroll"
-      "guard": { "requireAuth": false }
-    }
-  ],
-  "componentRegistry": []
-}
-```
-
----
-
-## 环境变量（可选）
-
-| 变量 | 说明 |
-|------|------|
-| `OPENAI_API_KEY` | 服务端 AI 代理使用的 API Key |
-| `NEXT_PUBLIC_CLOUD_API` | 云端同步 API 地址（留空则纯本地） |
-| `ROUTECANVAS_FILE` | MCP Server 画布文件路径（默认 cwd/canvas.json） |
-
----
 
 ## License
 

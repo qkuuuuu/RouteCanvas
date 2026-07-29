@@ -7,13 +7,17 @@ import type {
   UINode,
   Transition,
   ComponentDef,
+  DesignSystem,
+  BreakpointKey,
+  ResponsiveFrame,
+  DesignComponent,
   NodeProps,
   Viewport,
   Meta,
 } from "@/types/schema";
 import { genId } from "@/lib/id";
 
-export const SCHEMA_VERSION = "1.0.0";
+export const SCHEMA_VERSION = "2.0.0";
 const nowISO = () => new Date().toISOString();
 
 /* ---------- 防抖 localStorage 写入 ---------- */
@@ -61,6 +65,17 @@ export interface CanvasStore extends CanvasState {
     nodeId: string,
     propsPatch: Partial<NodeProps>,
   ) => void;
+  updateNodeResponsive: (
+    pageId: string,
+    nodeId: string,
+    breakpoint: BreakpointKey,
+    patch: ResponsiveFrame,
+  ) => void;
+  updateDesignSystem: (patch: Partial<DesignSystem>) => void;
+  createComponentFromNode: (pageId: string, nodeId: string) => string | null;
+  createComponentInstance: (pageId: string, componentId: string) => string | null;
+  addComponentVariant: (componentId: string, sourcePageId: string, sourceNodeId: string) => void;
+  applyComponentVariant: (pageId: string, nodeId: string, componentId: string, variantId: string) => void;
   removeNode: (pageId: string, nodeId: string) => void;
   addParsedNodes: (
     pageId: string,
@@ -100,18 +115,31 @@ export interface NodeInput {
   position: { x: number; y: number };
   size: { width: number; height: number };
   props: NodeProps;
+  zIndex?: number;
 }
 
 const emptyState = (): CanvasState => ({
   meta: {
     schemaVersion: SCHEMA_VERSION,
-    canvasName: "未命名画布",
+    canvasName: "未命名项目",
     createdAt: nowISO(),
     updatedAt: nowISO(),
     viewport: { x: 0, y: 0, zoom: 1 },
   },
   pages: [],
   transitions: [],
+  designSystem: {
+    tokens: [
+      { id: "color-primary", name: "color.primary", type: "color", value: "#4f46e5" },
+      { id: "color-surface", name: "color.surface", type: "color", value: "#ffffff" },
+      { id: "space-md", name: "space.md", type: "number", value: 16 },
+    ],
+    breakpoints: {
+      desktop: { label: "Desktop", width: 1440 },
+      tablet: { label: "Tablet", width: 768 },
+      mobile: { label: "Mobile", width: 390 },
+    },
+  },
   componentRegistry: [],
 });
 
@@ -120,6 +148,7 @@ const docSubset = (s: CanvasStore) => ({
   meta: s.meta,
   pages: s.pages,
   transitions: s.transitions,
+  designSystem: s.designSystem,
   componentRegistry: s.componentRegistry,
 });
 
@@ -211,7 +240,7 @@ export const useCanvasStore = create<CanvasStore>()(
             position: input?.position ?? { x: 40, y: 40 },
             size: input?.size ?? { width: 140, height: 44 },
             props: input?.props ?? {},
-            zIndex: maxZ + 1,
+            zIndex: input?.zIndex ?? maxZ + 1,
           };
           set((s) => ({
             pages: s.pages.map((p) =>
@@ -254,6 +283,97 @@ export const useCanvasStore = create<CanvasStore>()(
             ),
             meta: { ...s.meta, updatedAt: nowISO() },
           })),
+
+        updateNodeResponsive: (pageId, nodeId, breakpoint, patch) =>
+          set((s) => ({
+            pages: s.pages.map((p) =>
+              p.id === pageId
+                ? {
+                    ...p,
+                    nodes: p.nodes.map((n) =>
+                      n.id === nodeId
+                        ? {
+                            ...n,
+                            responsive: {
+                              ...n.responsive,
+                              [breakpoint]: {
+                                ...n.responsive?.[breakpoint],
+                                ...patch,
+                              },
+                            },
+                          }
+                        : n,
+                    ),
+                  }
+                : p,
+            ),
+            meta: { ...s.meta, updatedAt: nowISO() },
+          })),
+
+        updateDesignSystem: (patch) =>
+          set((s) => ({
+            designSystem: {
+              ...(s.designSystem ?? emptyState().designSystem!),
+              ...patch,
+            },
+            meta: { ...s.meta, updatedAt: nowISO() },
+          })),
+
+        createComponentFromNode: (pageId, nodeId) => {
+          const node = get().pages.find((p) => p.id === pageId)?.nodes.find((n) => n.id === nodeId);
+          if (!node) return null;
+          const id = `component_${Date.now().toString(36)}`;
+          const component: DesignComponent = {
+            id,
+            name: node.props?.text || node.type,
+            type: node.type,
+            size: { ...node.size },
+            variants: [{ id: "default", name: "Default", props: { ...node.props, custom: { ...node.props?.custom } } }],
+          };
+          set((s) => ({
+            designSystem: {
+              ...(s.designSystem ?? emptyState().designSystem!),
+              components: [...(s.designSystem?.components ?? []), component],
+            },
+            pages: s.pages.map((p) => p.id === pageId ? { ...p, nodes: p.nodes.map((n) => n.id === nodeId ? { ...n, componentId: id, variant: "default" } : n) } : p),
+          }));
+          return id;
+        },
+
+        createComponentInstance: (pageId, componentId) => {
+          const component = get().designSystem?.components?.find((item) => item.id === componentId);
+          const page = get().pages.find((item) => item.id === pageId);
+          if (!component || !page) return null;
+          const variant = component.variants[0];
+          const id = get().addNode(pageId, component.type, {
+            position: { x: 48 + (page.nodes.length % 5) * 24, y: 48 + (page.nodes.length % 5) * 24 },
+            size: { ...component.size },
+            props: { ...variant.props, custom: { ...variant.props.custom } },
+          });
+          if (id) get().updateNode(pageId, id, { componentId, variant: variant.id });
+          return id;
+        },
+
+        addComponentVariant: (componentId, sourcePageId, sourceNodeId) => {
+          const node = get().pages.find((p) => p.id === sourcePageId)?.nodes.find((n) => n.id === sourceNodeId);
+          if (!node) return;
+          set((s) => ({
+            designSystem: {
+              ...(s.designSystem ?? emptyState().designSystem!),
+              components: (s.designSystem?.components ?? []).map((component) => component.id === componentId ? {
+                ...component,
+                variants: [...component.variants, { id: `variant_${Date.now().toString(36)}`, name: `Variant ${component.variants.length + 1}`, props: { ...node.props, custom: { ...node.props?.custom } } }],
+              } : component),
+            },
+          }));
+        },
+
+        applyComponentVariant: (pageId, nodeId, componentId, variantId) => {
+          const component = get().designSystem?.components?.find((item) => item.id === componentId);
+          const variant = component?.variants.find((item) => item.id === variantId);
+          if (!component || !variant) return;
+          get().updateNode(pageId, nodeId, { type: component.type, size: { ...component.size }, props: { ...variant.props, custom: { ...variant.props.custom } }, componentId, variant: variantId });
+        },
 
         removeNode: (pageId, nodeId) =>
           set((s) => ({
@@ -362,6 +482,7 @@ export const useCanvasStore = create<CanvasStore>()(
             meta: doc.meta,
             pages: doc.pages,
             transitions: doc.transitions,
+            designSystem: doc.designSystem ?? emptyState().designSystem,
             componentRegistry: doc.componentRegistry ?? [],
             selection: { type: null, id: null },
           }),

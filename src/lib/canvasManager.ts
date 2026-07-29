@@ -102,6 +102,13 @@ export function createCanvas(name?: string): string {
   return id;
 }
 
+/** 创建一个独立项目并返回它的起始页面。 */
+export function createProject(name?: string): string {
+  const canvasId = createCanvas(name);
+  switchCanvas(canvasId);
+  return useCanvasStore.getState().pages[0]?.id ?? "";
+}
+
 /** 切换到指定画布 */
 export function switchCanvas(targetId: string) {
   const activeId = getActiveCanvasId();

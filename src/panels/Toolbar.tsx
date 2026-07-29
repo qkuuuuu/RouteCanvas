@@ -3,19 +3,21 @@ import * as React from "react";
 import {
   Undo2,
   Redo2,
-  Plus,
   Download,
   Upload,
   Sparkles,
   Play,
   Copy,
   Store,
-  Settings,
   Loader2,
   FolderOpen,
   RefreshCw,
   MessageSquare,
   Wand2,
+  GitBranch,
+  PenTool,
+  MoreHorizontal,
+  Bot,
 } from "lucide-react";
 import { MarketDialog } from "@/components/market/MarketDialog";
 import { ImportDialog } from "@/components/import/ImportDialog";
@@ -24,6 +26,9 @@ import { useCanvasStore, useTemporal } from "@/store/canvasStore";
 import { exportDocument, importDocument } from "@/data/serializer";
 import { wrapAsPrompt } from "@/data/promptTemplate";
 import { toast } from "@/lib/toast";
+import { useWorkspaceStore } from "@/store/workspaceStore";
+import { AiAgentDialog } from "@/components/AiAgentDialog";
+import { getAiSettings } from "@/lib/aiSettings";
 
 function download(filename: string, content: string) {
   const blob = new Blob([content], { type: "application/json" });
@@ -47,10 +52,12 @@ export function Toolbar({
   onToggleChat?: () => void;
 }) {
   const { undo, redo, canUndo, canRedo } = useTemporal();
-  const addPage = useCanvasStore((s) => s.addPage);
   const loadDocument = useCanvasStore((s) => s.loadDocument);
-  const canvasName = useCanvasStore((s) => s.meta.canvasName ?? "未命名画布");
+  const canvasName = useCanvasStore((s) => s.meta.canvasName ?? "未命名项目");
   const setCanvasName = useCanvasStore((s) => s.setCanvasName);
+  const view = useWorkspaceStore((s) => s.view);
+  const setView = useWorkspaceStore((s) => s.setView);
+  const studioOpen = useWorkspaceStore((s) => s.studioOpen);
 
   const fileRef = React.useRef<HTMLInputElement>(null);
   const [aiOpen, setAiOpen] = React.useState(false);
@@ -58,22 +65,11 @@ export function Toolbar({
   const [marketOpen, setMarketOpen] = React.useState(false);
   const [importOpen, setImportOpen] = React.useState(false);
   const [canvasMgrOpen, setCanvasMgrOpen] = React.useState(false);
-  const [apiKey, setApiKey] = React.useState("");
-  const [showAiSettings, setShowAiSettings] = React.useState(false);
   const [generating, setGenerating] = React.useState(false);
   const [aiResult, setAiResult] = React.useState("");
   const [aiError, setAiError] = React.useState("");
-
-  // 加载已保存的 API Key
-  React.useEffect(() => {
-    const saved = localStorage.getItem("routecanvas-openai-key");
-    if (saved) setApiKey(saved);
-  }, []);
-
-  const saveApiKey = (key: string) => {
-    setApiKey(key);
-    localStorage.setItem("routecanvas-openai-key", key);
-  };
+  const [moreOpen, setMoreOpen] = React.useState(false);
+  const [agentOpen, setAgentOpen] = React.useState(false);
 
   // 键盘快捷键 Ctrl/Cmd+Z / Shift+Z
   React.useEffect(() => {
@@ -131,21 +127,51 @@ export function Toolbar({
   const btn =
     "inline-flex items-center gap-1 px-2 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed";
 
+  if (!studioOpen) {
+    return (
+      <header className="flex h-12 shrink-0 items-center border-b border-gray-200 bg-[#fbfbfa] px-4">
+        <span className="text-sm font-semibold text-gray-900">RouteCanvas</span>
+        <span className="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[9px] font-medium text-gray-500">AI DESIGN</span>
+        <div className="flex-1" />
+        <span className="text-[11px] text-gray-400">对话生成，画布接管</span>
+      </header>
+    );
+  }
+
   return (
-    <header className="h-12 shrink-0 border-b border-gray-200 bg-white flex items-center gap-1 px-3">
+    <header className="relative h-12 shrink-0 border-b border-gray-200 bg-[#fbfbfa] flex items-center gap-1 px-3">
       <input
         value={canvasName}
         onChange={(e) => setCanvasName(e.target.value)}
+        placeholder="项目名称"
+        aria-label="项目名称"
         className="font-semibold text-sm text-gray-800 bg-transparent outline-none w-40 focus:bg-gray-50 rounded px-1"
       />
       <button
         className="p-1 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50"
         onClick={() => setCanvasMgrOpen(true)}
-        title="画布管理"
+        title="项目管理"
       >
         <FolderOpen size={14} />
       </button>
       <CanvasManagerDialog open={canvasMgrOpen} onClose={() => setCanvasMgrOpen(false)} />
+      <div className="w-px h-5 bg-gray-200 mx-1" />
+      <div className="flex items-center rounded-md border border-gray-200 bg-gray-50 p-0.5">
+        <button
+          className={`inline-flex h-7 items-center gap-1 rounded px-2 text-xs ${view === "design" ? "bg-white text-indigo-600 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
+          onClick={() => setView("design")}
+          title="设计视图：画板、图层、变量和响应式布局"
+        >
+          <PenTool size={13} /> 页面设计
+        </button>
+        <button
+          className={`inline-flex h-7 items-center gap-1 rounded px-2 text-xs ${view === "flow" ? "bg-white text-indigo-600 shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
+          onClick={() => setView("flow")}
+          title="流程视图：页面关系与交互跳转"
+        >
+          <GitBranch size={13} /> 交互流程
+        </button>
+      </div>
       <div className="w-px h-5 bg-gray-200 mx-1" />
       <button className={btn} onClick={undo} disabled={!canUndo} title="撤销 Ctrl+Z">
         <Undo2 size={14} />
@@ -153,50 +179,53 @@ export function Toolbar({
       <button className={btn} onClick={redo} disabled={!canRedo} title="重做 Ctrl+Shift+Z">
         <Redo2 size={14} />
       </button>
-      <div className="w-px h-5 bg-gray-200 mx-1" />
-      <button className={btn} onClick={() => addPage()} title="新建页面">
-        <Plus size={14} /> 页面
-      </button>
       <button
-        className="inline-flex items-center gap-1 px-2 py-1.5 rounded text-xs text-purple-600 hover:bg-purple-50"
+        className="hidden"
         onClick={() => setMarketOpen(true)}
         title="组件市场"
       >
         <Store size={14} /> 组件市场
       </button>
-      <button
-        className="inline-flex items-center gap-1 px-2 py-1.5 rounded text-xs text-blue-600 hover:bg-blue-50"
-        onClick={() => setImportOpen(true)}
-        title="智能导入：粘贴 HTML/TSX/Vue/Svelte 代码，自动拆解为可编辑节点"
-      >
-        <Wand2 size={14} /> 智能导入
-      </button>
-
       <div className="flex-1" />
 
       <button className={btn} onClick={() => window.open("/preview", "_blank")} title="在线预览">
         <Play size={14} /> 预览
       </button>
+      <button className="inline-flex h-8 items-center gap-1.5 rounded-md bg-gray-950 px-2.5 text-xs font-medium text-white hover:bg-gray-800" onClick={() => setAgentOpen(true)} title="连接全局 AI Agent">
+        <Bot size={14} /> AI Agent
+      </button>
+      <button className={btn} onClick={() => setMoreOpen((value) => !value)} title="更多项目操作"><MoreHorizontal size={15} /></button>
+      {moreOpen && (
+        <div className="absolute right-3 top-10 z-50 w-44 rounded-md border border-gray-200 bg-white p-1 shadow-xl">
+          <button className="flex h-8 w-full items-center gap-2 rounded px-2 text-xs text-gray-600 hover:bg-gray-50" onClick={() => { setImportOpen(true); setMoreOpen(false); }}><Wand2 size={14} /> 智能导入</button>
+          <button className="flex h-8 w-full items-center gap-2 rounded px-2 text-xs text-gray-600 hover:bg-gray-50" onClick={() => { setMarketOpen(true); setMoreOpen(false); }}><Store size={14} /> 组件市场</button>
+          {onMcpSync && <button className="flex h-8 w-full items-center gap-2 rounded px-2 text-xs text-gray-600 hover:bg-gray-50" onClick={() => { onMcpSync(); setMoreOpen(false); }}><RefreshCw size={14} /> 同步 MCP</button>}
+          <button className="flex h-8 w-full items-center gap-2 rounded px-2 text-xs text-gray-600 hover:bg-gray-50" onClick={() => { onCopy(); setMoreOpen(false); }}><Copy size={14} /> 复制 JSON</button>
+          <button className="flex h-8 w-full items-center gap-2 rounded px-2 text-xs text-gray-600 hover:bg-gray-50" onClick={() => { onExport(); setMoreOpen(false); }}><Download size={14} /> 导出文件</button>
+          <button className="flex h-8 w-full items-center gap-2 rounded px-2 text-xs text-gray-600 hover:bg-gray-50" onClick={() => { fileRef.current?.click(); setMoreOpen(false); }}><Upload size={14} /> 导入文件</button>
+          <button className="flex h-8 w-full items-center gap-2 rounded px-2 text-xs text-gray-600 hover:bg-gray-50" onClick={() => { onAiGenerate(); setMoreOpen(false); }}><Sparkles size={14} /> AI Prompt</button>
+        </div>
+      )}
       {onMcpSync && (
         <button
-          className={`${btn} ${mcpSyncState === "external" ? "text-green-600" : ""}`}
+          className="hidden"
           onClick={onMcpSync}
           title="从 canvas.json 同步（MCP 修改后自动同步，也可手动点击）"
         >
           <RefreshCw size={14} className={mcpSyncState === "synced" ? "animate-spin" : ""} /> MCP
         </button>
       )}
-      <button className={btn} onClick={onCopy} title="复制 JSON">
+      <button className="hidden" onClick={onCopy} title="复制 JSON">
         <Copy size={14} /> 复制
       </button>
-      <button className={btn} onClick={onExport} title="下载 .json">
+      <button className="hidden" onClick={onExport} title="下载 .json">
         <Download size={14} /> 导出
       </button>
-      <button className={btn} onClick={() => fileRef.current?.click()} title="导入 JSON">
+      <button className="hidden" onClick={() => fileRef.current?.click()} title="导入 JSON">
         <Upload size={14} /> 导入
       </button>
       <button
-        className="inline-flex items-center gap-1 px-2 py-1.5 rounded text-xs text-purple-600 hover:bg-purple-50"
+        className="hidden"
         onClick={onAiGenerate}
         title="包装为 AI Prompt"
       >
@@ -225,6 +254,7 @@ export function Toolbar({
 
       <MarketDialog open={marketOpen} onClose={() => setMarketOpen(false)} />
       <ImportDialog open={importOpen} onClose={() => setImportOpen(false)} />
+      <AiAgentDialog open={agentOpen} onClose={() => setAgentOpen(false)} />
 
       {aiOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-6">
@@ -234,17 +264,9 @@ export function Toolbar({
               <span className="text-sm font-semibold">AI Prompt</span>
               <div className="flex items-center gap-2">
                 <button
-                  className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${showAiSettings ? "bg-purple-50 text-purple-600" : "text-gray-500 hover:bg-gray-100"}`}
-                  onClick={() => setShowAiSettings((v) => !v)}
-                  title="API Key 设置"
-                >
-                  <Settings size={14} /> 设置
-                </button>
-                <button
                   className="text-gray-400 hover:text-gray-700"
                   onClick={() => {
                     setAiOpen(false);
-                    setShowAiSettings(false);
                     setAiResult("");
                     setAiError("");
                   }}
@@ -253,34 +275,6 @@ export function Toolbar({
                 </button>
               </div>
             </div>
-
-            {/* 设置面板 */}
-            {showAiSettings && (
-              <div className="px-4 py-3 border-b bg-gray-50">
-                <label className="text-[11px] text-gray-500 mb-1 block">OpenAI API Key（存浏览器 localStorage，不会上传到服务器）</label>
-                <div className="flex gap-2">
-                  <input
-                    type="password"
-                    className="flex-1 h-8 rounded border border-gray-300 px-2 text-xs font-mono"
-                    placeholder="sk-..."
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                  />
-                  <button
-                    className="px-3 py-1.5 rounded text-xs bg-blue-600 text-white hover:bg-blue-700"
-                    onClick={() => {
-                      saveApiKey(apiKey);
-                      toast.success("API Key 已保存");
-                    }}
-                  >
-                    保存
-                  </button>
-                </div>
-                <p className="text-[10px] text-gray-400 mt-1">
-                  Key 仅存于本机浏览器，调用 AI 时随请求发送给后端代理。也可由部署方设置 OPENAI_API_KEY 环境变量，无需用户输入。
-                </p>
-              </div>
-            )}
 
             {/* 结果区域（如有） */}
             {aiResult ? (
@@ -343,12 +337,14 @@ export function Toolbar({
                       setGenerating(true);
                       setAiError("");
                       try {
+                        const aiSettings = getAiSettings();
                         const resp = await fetch("/api/ai", {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({
                             prompt: aiText,
-                            apiKey: apiKey || undefined,
+                            ...aiSettings,
+                            apiKey: aiSettings.apiKey || undefined,
                           }),
                         });
                         const data = await resp.json();

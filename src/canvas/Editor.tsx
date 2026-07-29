@@ -1,11 +1,10 @@
 "use client";
 import * as React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useCanvasStore, useTemporal } from "@/store/canvasStore";
 import { Toolbar } from "@/panels/Toolbar";
-import { ComponentLibrary } from "@/panels/ComponentLibrary";
 import { PropertyPanel } from "@/panels/PropertyPanel";
-import ReactFlowCanvas from "@/canvas/ReactFlowCanvas";
+import FlowOverview from "@/canvas/FlowOverview";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ToastContainer } from "@/lib/toast";
 import { initCanvasManager, syncPageCount } from "@/lib/canvasManager";
@@ -13,15 +12,21 @@ import { useMcpSync } from "@/lib/mcpSync";
 import { ChatPanel } from "@/panels/ChatPanel";
 import { AiAnnotateOverlay } from "@/canvas/AiAnnotateOverlay";
 import { useAnnotateStore } from "@/store/annotateStore";
+import { DesignCanvas } from "@/design/DesignCanvas";
+import { DesignSidebar } from "@/design/DesignSidebar";
+import { useWorkspaceStore } from "@/store/workspaceStore";
+import { WorkspaceSidebar } from "@/panels/WorkspaceSidebar";
+import { createProject } from "@/lib/canvasManager";
 
 export default function Editor() {
-  const addPage = useCanvasStore((s) => s.addPage);
   const { clear } = useTemporal();
-  const seeded = useRef(false);
   const [hydrated, setHydrated] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
   const annotateTarget = useAnnotateStore((s) => s.target);
   const closeAnnotate = useAnnotateStore((s) => s.close);
+  const view = useWorkspaceStore((s) => s.view);
+  const setActivePageId = useWorkspaceStore((s) => s.setActivePageId);
+  const studioOpen = useWorkspaceStore((s) => s.studioOpen);
+  const openStudio = useWorkspaceStore((s) => s.openStudio);
 
   // MCP 双向同步（编辑器 ↔ canvas.json）
   const { syncNow, syncState } = useMcpSync(true);
@@ -55,32 +60,12 @@ export default function Editor() {
     return () => { unsub(); clearTimeout(t); };
   }, []);
 
-  // 首次无数据时 seed 一个示范首页，避免空画布
+  // 仅恢复已有项目；新用户从 AI 起始页或模板库主动创建内容。
   useEffect(() => {
-    if (seeded.current || !hydrated) return;
-    seeded.current = true;
+    if (!hydrated) return;
     const s = useCanvasStore.getState();
-    if (s.pages.length === 0) {
-      const homeId = addPage({ name: "首页", path: "/home", isIndex: true, x: 80, y: 80 });
-      const searchId = addPage({ name: "搜索结果页", path: "/search", x: 1040, y: 80 });
-      useCanvasStore.getState().addNode(homeId, "Button", {
-        position: { x: 40, y: 40 },
-        size: { width: 120, height: 40 },
-        props: { text: "搜索", custom: { variant: "primary" } },
-      });
-      const btnId = useCanvasStore.getState().pages
-        .find((p) => p.id === homeId)
-        ?.nodes[0]?.id;
-      if (btnId) {
-        useCanvasStore.getState().addTransition(
-          { pageId: homeId, nodeId: btnId, event: "onClick" },
-          { pageId: searchId, params: { keyword: "${searchValue}" } },
-        );
-      }
-      clear();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated]);
+    if (s.pages[0]) setActivePageId(s.pages[0].id);
+  }, [hydrated, setActivePageId]);
 
   if (!hydrated) {
     return (
@@ -95,22 +80,37 @@ export default function Editor() {
 
   return (
     <ErrorBoundary>
-      <div className="flex flex-col h-screen w-screen overflow-hidden bg-gray-100">
+      <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#f4f4f2]">
         <Toolbar
           onMcpSync={syncNow}
           mcpSyncState={syncState}
-          chatOpen={chatOpen}
-          onToggleChat={() => setChatOpen((v) => !v)}
         />
         <div className="flex flex-1 min-h-0">
-          <ComponentLibrary />
-          <main className="flex-1 min-w-0 relative">
-            <ReactFlowCanvas />
-          </main>
-          <PropertyPanel />
+          <WorkspaceSidebar />
+          <section className={`${studioOpen ? "w-80 shrink-0 border-r" : "min-w-0 flex-1"} border-gray-200 bg-white`}>
+            <ChatPanel
+              open
+              onClose={() => undefined}
+              docked
+              onStartProject={openStudio}
+              onCreateCanvas={() => {
+                const id = createProject();
+                const page = useCanvasStore.getState().pages.find((item) => item.id === id);
+                if (page) useCanvasStore.getState().updatePage(id, { name: "首页", layout: { ...page.layout, width: 960, height: 720 } });
+                setActivePageId(id);
+                openStudio();
+              }}
+            />
+          </section>
+          {studioOpen && <section className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
+            {view === "design" && <DesignSidebar />}
+            <main className="flex-1 min-w-0 relative">
+              {view === "design" ? <DesignCanvas /> : <FlowOverview />}
+            </main>
+            <PropertyPanel />
+          </section>}
         </div>
       </div>
-      <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} />
       {annotateTarget && (
         <AiAnnotateOverlay target={annotateTarget} onClose={closeAnnotate} />
       )}

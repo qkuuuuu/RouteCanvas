@@ -13,6 +13,7 @@ import { findComponentDef } from "@/components/registry";
 import { executeOperations, parseAiResponse, type ChatOp } from "@/data/chatOps";
 import { DESIGN_RULES } from "@/data/designSystem";
 import { toast } from "@/lib/toast";
+import { getAiSettings } from "@/lib/aiSettings";
 import type { UINode } from "@/types/schema";
 
 const W = 480;
@@ -265,7 +266,7 @@ export function AiAnnotateOverlay({
     setBusy(true);
     try {
       const imageDataUrl = buildImage();
-      const apiKey = localStorage.getItem("routecanvas-openai-key") ?? "";
+      const aiSettings = getAiSettings();
 
       // 组装节点上下文
       const nodeCtx = isEdit
@@ -304,7 +305,7 @@ ${DESIGN_RULES}`,
       const resp = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages, apiKey: apiKey || undefined, model: "gpt-4o" }),
+        body: JSON.stringify({ messages, ...aiSettings, apiKey: aiSettings.apiKey || undefined }),
       });
       const data = await resp.json();
       if (!resp.ok) {

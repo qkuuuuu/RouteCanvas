@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
  *   { prompt: string, model?: string, apiKey?: string }
  *
  * API Key 来源（优先级）:
- *   1. 请求体 apiKey（前端用户在配置面板输入，存 localStorage）
+ *   1. 请求体 apiKey（前端用户在全局 AI Agent 中输入，存 localStorage）
  *   2. 服务端环境变量 OPENAI_API_KEY（部署方预设，可选）
  *
  * 两种方式都不在前端暴露服务端密钥；
@@ -16,10 +16,11 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { prompt, model, apiKey: userKey } = body as {
+    const { prompt, model, apiKey: userKey, baseUrl } = body as {
       prompt?: string;
       model?: string;
       apiKey?: string;
+      baseUrl?: string;
     };
 
     if (!prompt) {
@@ -35,13 +36,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "未配置 API Key。请在 AI 面板的「设置」中输入你的 OpenAI API Key，或由部署方设置 OPENAI_API_KEY 环境变量。",
+            "未配置 API Key。请在顶部“AI Agent”中配置 OpenAI API Key，或由部署方设置 OPENAI_API_KEY 环境变量。",
         },
         { status: 503 },
       );
     }
 
-    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+    const apiBase = (baseUrl?.trim() || "https://api.openai.com/v1").replace(/\/$/, "");
+    const endpoint = apiBase.endsWith("/chat/completions") ? apiBase : `${apiBase}/chat/completions`;
+    const parsedEndpoint = new URL(endpoint);
+    if (!(["http:", "https:"] as string[]).includes(parsedEndpoint.protocol)) {
+      return NextResponse.json({ error: "API Base URL 仅支持 HTTP 或 HTTPS" }, { status: 400 });
+    }
+
+    const resp = await fetch(parsedEndpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

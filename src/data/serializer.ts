@@ -1,7 +1,20 @@
-import type { CanvasState, CanvasDocument } from "@/types/schema";
+import type { CanvasState, CanvasDocument, DesignSystem } from "@/types/schema";
 import { SCHEMA_VERSION } from "@/store/canvasStore";
 
 const nowISO = () => new Date().toISOString();
+
+const defaultDesignSystem = (): DesignSystem => ({
+  tokens: [
+    { id: "color-primary", name: "color.primary", type: "color", value: "#4f46e5" },
+    { id: "color-surface", name: "color.surface", type: "color", value: "#ffffff" },
+    { id: "space-md", name: "space.md", type: "number", value: 16 },
+  ],
+  breakpoints: {
+    desktop: { label: "Desktop", width: 1440 },
+    tablet: { label: "Tablet", width: 768 },
+    mobile: { label: "Mobile", width: 390 },
+  },
+});
 
 /** 导出为 JSON 文档（含 componentRegistry 扩展字段，便于跨设备恢复运行时组件） */
 export function exportDocument(state: CanvasState): CanvasState {
@@ -14,6 +27,7 @@ export function exportDocument(state: CanvasState): CanvasState {
     },
     pages: state.pages,
     transitions: state.transitions,
+    designSystem: state.designSystem ?? defaultDesignSystem(),
     componentRegistry: state.componentRegistry,
   };
 }
@@ -85,6 +99,8 @@ export function importDocument(json: string): ImportResult {
     },
     pages: doc.pages ?? [],
     transitions: doc.transitions ?? [],
+    designSystem:
+      (parsed as { designSystem?: DesignSystem }).designSystem ?? defaultDesignSystem(),
     componentRegistry:
       (parsed as { componentRegistry?: CanvasState["componentRegistry"] })
         .componentRegistry ?? [],

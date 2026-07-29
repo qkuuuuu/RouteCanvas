@@ -1,6 +1,6 @@
 {
   "name": "routecanvas-mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "RouteCanvas MCP Server - 让 AI Agent 直接读写画布",
   "type": "module",
   "main": "dist/index.js",

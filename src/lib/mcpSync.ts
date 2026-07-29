@@ -31,10 +31,11 @@ export function useMcpSync(enabled: boolean) {
             meta: s.meta,
             pages: s.pages,
             transitions: s.transitions,
+            designSystem: s.designSystem,
             componentRegistry: s.componentRegistry,
           });
           // 内容未变（如仅选区/视口变化）则跳过，避免无意义写入触发 mtime
-          const json = JSON.stringify({ pages: doc.pages, transitions: doc.transitions });
+          const json = JSON.stringify({ pages: doc.pages, transitions: doc.transitions, designSystem: doc.designSystem });
           if (json === lastPushedJson.current) return;
           lastPushedJson.current = json;
           const res = await fetch("/api/canvas-file", {
@@ -73,11 +74,13 @@ export function useMcpSync(enabled: boolean) {
         const current = JSON.stringify({
           pages: s.pages,
           transitions: s.transitions,
+          designSystem: s.designSystem,
           componentRegistry: s.componentRegistry,
         });
         const incoming = JSON.stringify({
           pages: data.content.pages ?? [],
           transitions: data.content.transitions ?? [],
+          designSystem: data.content.designSystem,
           componentRegistry: data.content.componentRegistry ?? [],
         });
         if (current === incoming) return;
@@ -90,6 +93,7 @@ export function useMcpSync(enabled: boolean) {
           lastPushedJson.current = JSON.stringify({
             pages: result.state.pages,
             transitions: result.state.transitions,
+            designSystem: result.state.designSystem,
           });
           useCanvasStore.getState().loadDocument(result.state);
           // 等一个 tick 让 subscribe 回调跑完再解除抑制
@@ -126,6 +130,7 @@ export function useMcpSync(enabled: boolean) {
         lastPushedJson.current = JSON.stringify({
           pages: result.state.pages,
           transitions: result.state.transitions,
+          designSystem: result.state.designSystem,
         });
         useCanvasStore.getState().loadDocument(result.state);
         setTimeout(() => {

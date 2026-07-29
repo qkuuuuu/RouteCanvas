@@ -30,6 +30,60 @@ export interface Layout {
   collapsed?: boolean;
 }
 
+/* ============ V2 design primitives ============ */
+export type BreakpointKey = "desktop" | "tablet" | "mobile";
+export type LayoutMode = "absolute" | "stack" | "grid";
+
+export interface ResponsiveFrame {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+}
+
+export interface NodeLayout {
+  mode: LayoutMode;
+  direction?: "horizontal" | "vertical";
+  gap?: number;
+  padding?: number;
+  align?: "start" | "center" | "end" | "stretch";
+  justify?: "start" | "center" | "end" | "between";
+  columns?: number;
+}
+
+export interface NodeConstraints {
+  horizontal?: "left" | "right" | "center" | "stretch";
+  vertical?: "top" | "bottom" | "center" | "stretch";
+}
+
+export interface DesignToken {
+  id: string;
+  name: string;
+  type: "color" | "number" | "string" | "font" | "shadow";
+  value: string | number;
+  description?: string;
+}
+
+export interface DesignSystem {
+  tokens: DesignToken[];
+  breakpoints: Record<BreakpointKey, { label: string; width: number }>;
+  components?: DesignComponent[];
+}
+
+export interface DesignComponentVariant {
+  id: string;
+  name: string;
+  props: NodeProps;
+}
+
+export interface DesignComponent {
+  id: string;
+  name: string;
+  type: string;
+  size: Size;
+  variants: DesignComponentVariant[];
+}
+
 /* ============ props：UI 节点素材与逻辑绑定 ============ */
 export interface NodeProps {
   text?: string;
@@ -56,6 +110,16 @@ export interface UINode {
   size: Size;
   props?: NodeProps;
   zIndex?: number; // 层级（数字越大越在上层）
+  /** V2: parentId creates a layer/component tree while preserving V1 positions. */
+  parentId?: string | null;
+  layout?: NodeLayout;
+  constraints?: NodeConstraints;
+  responsive?: Partial<Record<BreakpointKey, ResponsiveFrame>>;
+  hidden?: boolean;
+  locked?: boolean;
+  componentId?: string;
+  variant?: string;
+  note?: string;
 }
 
 /* ============ pages：页面画板与组件树 ============ */
@@ -144,6 +208,7 @@ export interface CanvasDocument {
   meta: Meta;
   pages: Page[];
   transitions: Transition[];
+  designSystem?: DesignSystem;
 }
 
 /** 完整工作台状态（含组件注册表，注册表不随文档导出，单独存） */

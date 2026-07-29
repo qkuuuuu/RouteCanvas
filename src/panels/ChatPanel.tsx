@@ -4,11 +4,12 @@
  * 用户输入自然语言指令 → AI 返回结构化 operations → 实时应用到画布。
  */
 import * as React from "react";
-import { Bot, Send, Settings, Sparkles, User, X, Loader2, Wand2, LayoutTemplate, LogIn } from "lucide-react";
+import { Bot, Send, Sparkles, User, X, Loader2, Wand2, LayoutTemplate, LogIn } from "lucide-react";
 import { useCanvasStore } from "@/store/canvasStore";
 import { buildChatMessages } from "@/data/chatPrompt";
-import { executeOperations, parseAiResponse } from "@/data/chatOps";
+import { describeOperation, executeOperations, parseAiResponse, type ChatOp } from "@/data/chatOps";
 import { toast } from "@/lib/toast";
+import { getAiSettings } from "@/lib/aiSettings";
 
 interface ChatMsg {
   role: "user" | "assistant";
@@ -43,18 +44,12 @@ const QUICK_ACTIONS = [
   },
 ] as const;
 
-export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function ChatPanel({ open, onClose, docked = false, onCreateCanvas, onStartProject }: { open: boolean; onClose: () => void; docked?: boolean; onCreateCanvas?: () => void; onStartProject?: () => void }) {
   const [messages, setMessages] = React.useState<ChatMsg[]>([]);
   const [input, setInput] = React.useState("");
   const [busy, setBusy] = React.useState(false);
-  const [apiKey, setApiKey] = React.useState("");
-  const [showSettings, setShowSettings] = React.useState(false);
+  const [proposal, setProposal] = React.useState<{ reply: string; operations: ChatOp[] } | null>(null);
   const bottomRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    const saved = localStorage.getItem("routecanvas-openai-key");
-    if (saved) setApiKey(saved);
-  }, []);
 
   React.useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -65,6 +60,7 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
   const send = async (override?: string) => {
     const instruction = (override ?? input).trim();
     if (!instruction || busy) return;
+    onStartProject?.();
     setInput("");
     setBusy(true);
     setMessages((m) => [...m, { role: "user", content: instruction }]);
@@ -78,10 +74,11 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
       const state = useCanvasStore.getState();
       const reqMessages = buildChatMessages(state, history, instruction);
 
+      const aiSettings = getAiSettings();
       const resp = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: reqMessages, apiKey: apiKey || undefined }),
+        body: JSON.stringify({ messages: reqMessages, ...aiSettings, apiKey: aiSettings.apiKey || undefined }),
       });
       const data = await resp.json();
       if (!resp.ok) {
@@ -101,21 +98,16 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
         return;
       }
 
-      // 执行操作 → 画布实时更新
-      let applied: string[] = [];
-      if (parsed.operations && parsed.operations.length > 0) {
-        applied = executeOperations(parsed.operations);
-        toast.success(`已应用 ${applied.length} 项修改`);
-      }
-
       setMessages((m) => [
         ...m,
         {
           role: "assistant",
-          content: parsed.reply || "已完成修改",
-          applied,
+          content: parsed.reply || "已生成修改方案",
         },
       ]);
+      if (parsed.operations?.length) {
+        setProposal({ reply: parsed.reply || "AI 修改方案", operations: parsed.operations });
+      }
     } catch (e) {
       setMessages((m) => [
         ...m,
@@ -127,59 +119,29 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
   };
 
   return (
-    <div className="fixed right-4 bottom-4 z-50 w-96 h-[560px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden">
+    <div className={docked ? "flex h-full w-full flex-col overflow-hidden bg-white" : "fixed bottom-4 right-4 z-50 flex h-[560px] w-96 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl"}>
       {/* 头部 */}
-      <div className="h-11 shrink-0 px-3 flex items-center justify-between bg-gradient-to-r from-indigo-500 to-pink-500 text-white">
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <Sparkles size={15} /> AI 设计助手
+      <div className="flex h-11 shrink-0 items-center justify-between border-b border-gray-100 bg-[#fbfbfa] px-3 text-gray-900">
+        <div className="flex items-center gap-2 text-xs font-semibold">
+          <span className="grid h-6 w-6 place-items-center rounded-md bg-gray-950 text-white"><Sparkles size={13} /></span>
+          <span>AI 设计会话</span>
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" title="可用" />
         </div>
-        <div className="flex items-center gap-1">
-          <button
-            className="p-1 rounded hover:bg-white/20"
-            onClick={() => setShowSettings((v) => !v)}
-            title="API Key 设置"
-          >
-            <Settings size={14} />
-          </button>
-          <button className="p-1 rounded hover:bg-white/20" onClick={onClose}>
-            <X size={15} />
-          </button>
-        </div>
+        {!docked && <button className="p-1 rounded text-gray-400 hover:bg-gray-100" onClick={onClose}><X size={15} /></button>}
       </div>
-
-      {/* 设置 */}
-      {showSettings && (
-        <div className="px-3 py-2 border-b bg-gray-50 shrink-0">
-          <label className="text-[10px] text-gray-500 block mb-1">OpenAI API Key（存本地浏览器）</label>
-          <div className="flex gap-2">
-            <input
-              type="password"
-              className="flex-1 h-7 rounded border border-gray-300 px-2 text-xs font-mono"
-              placeholder="sk-..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-            />
-            <button
-              className="px-2 py-1 rounded text-xs bg-indigo-500 text-white hover:bg-indigo-600"
-              onClick={() => {
-                localStorage.setItem("routecanvas-openai-key", apiKey);
-                toast.success("API Key 已保存");
-              }}
-            >
-              保存
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* 消息列表 */}
       <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3">
         {messages.length === 0 && (
-          <div className="text-center text-gray-400 text-xs mt-8 space-y-2">
-            <Bot size={28} className="mx-auto text-indigo-300" />
-            <p>描述你想要的页面，我来帮你设计。</p>
-            <p className="text-[10px]">例如：&quot;做一个登录页，有用户名、密码输入框和登录按钮&quot;</p>
-            <p className="text-[10px] text-indigo-400">也可以直接点下方「美化当前页面」一键提升颜值</p>
+          <div className="mx-auto mt-16 w-full max-w-md px-6 text-center">
+            <span className="mx-auto grid h-10 w-10 place-items-center rounded-xl bg-gray-950 text-white shadow-sm"><Sparkles size={18} /></span>
+            <h1 className="mt-5 text-xl font-semibold text-gray-900">从想法开始设计</h1>
+            <p className="mx-auto mt-2 max-w-sm text-xs leading-5 text-gray-500">描述产品、页面或交互流程。AI 先生成可审核的雏形，你可以随时在右侧画布接管细节。</p>
+            <div className="mt-5 flex justify-center gap-2">
+              <button className="inline-flex h-9 items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 shadow-sm hover:border-gray-300 hover:bg-gray-50" onClick={onCreateCanvas}><LayoutTemplate size={14} /> 新建空白项目</button>
+              <button className="inline-flex h-9 items-center gap-1.5 rounded-md bg-gray-950 px-3 text-xs font-medium text-white shadow-sm hover:bg-gray-800" onClick={() => send("请为我创建一个完整、响应式、可继续编辑的产品雏形，包含首页、核心功能页和清晰的页面流程。")}><Wand2 size={14} /> AI 生成雏形</button>
+            </div>
+            <p className="mt-4 text-[10px] text-gray-400">AI 的每次修改都会先展示变更清单，确认后才应用。</p>
           </div>
         )}
         {messages.map((m, i) => (
@@ -192,7 +154,7 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
             <div
               className={`max-w-[75%] rounded-lg px-3 py-2 text-xs leading-relaxed ${
                 m.role === "user"
-                  ? "bg-indigo-500 text-white"
+                  ? "bg-gray-950 text-white"
                   : "bg-gray-100 text-gray-700"
               }`}
             >
@@ -208,8 +170,8 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
               )}
             </div>
             {m.role === "user" && (
-              <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-                <User size={13} className="text-indigo-600" />
+              <div className="w-6 h-6 rounded-full bg-gray-900 flex items-center justify-center shrink-0">
+                <User size={13} className="text-white" />
               </div>
             )}
           </div>
@@ -227,6 +189,32 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
         <div ref={bottomRef} />
       </div>
 
+      {proposal && (
+        <div className="shrink-0 border-t border-indigo-100 bg-indigo-50/70 px-3 py-2">
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-indigo-700">待审核变更 · {proposal.operations.length} 项</span>
+            <span className="text-[10px] text-indigo-400">尚未修改画布</span>
+          </div>
+          <div className="max-h-28 space-y-1 overflow-y-auto rounded border border-indigo-100 bg-white p-2">
+            {proposal.operations.map((operation, index) => (
+              <div key={index} className="flex items-start gap-1.5 text-[10px] text-gray-600">
+                <span className={`mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full ${operation.op.startsWith("remove") ? "bg-red-400" : operation.op.startsWith("add") ? "bg-emerald-400" : "bg-amber-400"}`} />
+                <span>{describeOperation(operation)}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2 flex justify-end gap-2">
+            <button className="h-7 rounded px-2.5 text-[11px] text-gray-600 hover:bg-white" onClick={() => { setProposal(null); setMessages((items) => [...items, { role: "assistant", content: "已取消这次修改，画布未发生变化。" }]); }}>取消</button>
+            <button className="h-7 rounded bg-indigo-600 px-3 text-[11px] font-medium text-white hover:bg-indigo-700" onClick={() => {
+              const applied = executeOperations(proposal.operations);
+              setMessages((items) => [...items, { role: "assistant", content: "修改已确认并应用。", applied }]);
+              toast.success(`已应用 ${applied.length} 项修改`);
+              setProposal(null);
+            }}>应用修改</button>
+          </div>
+        </div>
+      )}
+
       {/* 输入区 */}
       <div className="p-3 border-t border-gray-100 shrink-0 space-y-2">
         {/* 快捷指令 */}
@@ -236,7 +224,7 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
               key={qa.label}
               className="inline-flex items-center gap-1 h-7 px-2.5 rounded-full border border-indigo-100 bg-indigo-50/60 text-indigo-600 text-[11px] font-medium hover:bg-indigo-100 hover:border-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               onClick={() => send(qa.prompt)}
-              disabled={busy}
+              disabled={busy || !!proposal}
               title={qa.label}
             >
               <qa.icon size={12} />
@@ -256,12 +244,12 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
                 send();
               }
             }}
-            disabled={busy}
+            disabled={busy || !!proposal}
           />
           <button
             className="w-9 h-9 rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none shrink-0 transition-shadow"
             onClick={() => send()}
-            disabled={busy || !input.trim()}
+            disabled={busy || !!proposal || !input.trim()}
             title="发送"
           >
             <Send size={15} />
