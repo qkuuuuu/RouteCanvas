@@ -345,7 +345,13 @@ server.tool(
     const srcPage = doc.pages.find((p) => p.id === sourcePageId)!;
     if (!srcPage.nodes.some((n) => n.id === sourceNodeId)) return err(`来源节点 ${sourceNodeId} 不存在于页面 ${sourcePageId}`);
     const dup = doc.transitions.some(
-      (t) => t.source.pageId === sourcePageId && t.source.nodeId === sourceNodeId && t.target.pageId === targetPageId,
+      (t) => t.source.pageId === sourcePageId &&
+        t.source.nodeId === sourceNodeId &&
+        t.target.pageId === targetPageId &&
+        (t.source.event ?? "onClick") === (event ?? "onClick") &&
+        (t.mode ?? "navigate") === (mode ?? "navigate") &&
+        JSON.stringify(t.target.params ?? {}) === JSON.stringify(params ?? {}) &&
+        Boolean(t.guard?.requireAuth) === Boolean(requireAuth),
     );
     if (dup) return err("该连线已存在");
     const id = genId("trans");

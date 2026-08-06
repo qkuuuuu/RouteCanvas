@@ -1,7 +1,4 @@
 import type { ComponentDef } from "@/types/schema";
-import { magicUIComponents } from "./components";
-
-export { magicUIComponents };
 
 const COLOR_OPTIONS = ["#6366f1", "#ec4899", "#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
 const colorField = { key: "color", label: "颜色", type: "select" as const, options: COLOR_OPTIONS, default: "#6366f1", bucket: "custom" as const };

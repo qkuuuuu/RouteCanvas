@@ -203,12 +203,26 @@ export interface RenderNode {
   children?: RenderNode[];
 }
 
+/* ============ comments：画布评论钉 ============ */
+export interface CanvasComment {
+  id: string;
+  pageId: string;
+  nodeId?: string | null;
+  x: number; // 相对所属页面的坐标
+  y: number;
+  text: string;
+  author?: string;
+  createdAt: string;
+  resolved?: boolean;
+}
+
 /* ============ 顶层文档 ============ */
 export interface CanvasDocument {
   meta: Meta;
   pages: Page[];
   transitions: Transition[];
   designSystem?: DesignSystem;
+  comments?: CanvasComment[];
 }
 
 /** 完整工作台状态（含组件注册表，注册表不随文档导出，单独存） */

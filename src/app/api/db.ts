@@ -19,8 +19,17 @@ interface DocRecord {
   updatedAt: string;
 }
 
+export interface ShareRecord {
+  id: string;
+  name: string;
+  json: unknown;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface DBShape {
   docs: Record<string, DocRecord>;
+  shares: Record<string, ShareRecord>;
 }
 
 let cache: DBShape | null = null;
@@ -33,9 +42,10 @@ async function load(): Promise<DBShape> {
   if (cache) return cache;
   try {
     const raw = await fs.readFile(DB_FILE, "utf-8");
-    cache = JSON.parse(raw) as DBShape;
+    const parsed = JSON.parse(raw) as Partial<DBShape>;
+    cache = { docs: parsed.docs ?? {}, shares: parsed.shares ?? {} };
   } catch {
-    cache = { docs: {} };
+    cache = { docs: {}, shares: {} };
   }
   return cache!;
 }
@@ -81,4 +91,18 @@ export async function deleteDoc(id: string): Promise<boolean> {
   delete db.docs[id];
   await save(db);
   return true;
+}
+
+export async function createShare(id: string, name: string, json: unknown): Promise<ShareRecord> {
+  const db = await load();
+  const now = new Date().toISOString();
+  const record: ShareRecord = { id, name, json, createdAt: now, updatedAt: now };
+  db.shares[id] = record;
+  await save(db);
+  return record;
+}
+
+export async function getShare(id: string): Promise<ShareRecord | null> {
+  const db = await load();
+  return db.shares[id] ?? null;
 }

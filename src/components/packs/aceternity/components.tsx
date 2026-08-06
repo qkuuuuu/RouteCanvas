@@ -421,7 +421,7 @@ export const BentoGrid: React.FC<PackComponentProps> = ({ text }) => (
 export const FlipWords: React.FC<PackComponentProps> = ({ text }) => {
   const words = ["优雅", "现代", "快速", "精致"];
   const [idx, setIdx] = React.useState(0);
-  React.useEffect(() => { const t = setInterval(() => setIdx((p) => (p + 1) % words.length), 2000); return () => clearInterval(t); }, []);
+  React.useEffect(() => { const t = setInterval(() => setIdx((p) => (p + 1) % words.length), 2000); return () => clearInterval(t); }, [words.length]);
   return (
     <div className="w-full h-full flex items-center justify-center gap-1">
       <span className="text-sm text-gray-600">{text ?? "让它更"}</span>

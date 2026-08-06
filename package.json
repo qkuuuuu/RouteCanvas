@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "postinstall": "node scripts/sync-pdf-worker.mjs"
   },
   "dependencies": {
     "@babel/standalone": "^7.25.6",
@@ -16,8 +19,13 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "framer-motion": "^11.3.24",
+    "jspdf": "^4.2.1",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.428.0",
+    "mammoth": "^1.12.0",
     "next": "^14.2.35",
+    "pdfjs-dist": "^6.2.108",
+    "pptxgenjs": "^4.0.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "tailwind-merge": "^2.5.2",
@@ -34,6 +42,7 @@
     "eslint-config-next": "^14.2.35",
     "postcss": "^8.4.41",
     "tailwindcss": "^3.4.10",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^2.1.9"
   }
 }

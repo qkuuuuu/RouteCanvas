@@ -1,16 +1,19 @@
 "use client";
 import * as React from "react";
 import { createPortal } from "react-dom";
-import { ImagePlus, Search, ChevronDown, ChevronRight } from "lucide-react";
+import { Clock3, ImagePlus, Search, ChevronDown, ChevronRight, Star } from "lucide-react";
 import * as Lucide from "lucide-react";
 import { useCanvasStore } from "@/store/canvasStore";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 import { getMergedRegistry } from "@/components/registry";
 import { BUILTIN_COMPONENTS } from "@/components/builtin";
-import { PACK_COMPONENTS } from "@/components/packs";
-import type { PackComponentProps } from "@/components/packs";
+import { PackRenderer } from "@/components/packs/PackRenderer";
 import { CssSandbox } from "@/components/sandbox/cssSandbox";
 import { toast } from "@/lib/toast";
 import type { ComponentDef } from "@/types/schema";
+
+const FAVORITES_KEY = "routecanvas-component-favorites";
+const RECENTS_KEY = "routecanvas-component-recents";
 
 /* ---------- 分类映射：旧分类 → 新二级分类 ---------- */
 const SUB_CATEGORY_MAP: Record<string, { category: string; subCategory?: string }> = {
@@ -101,8 +104,7 @@ function HoverPreview({ def, rect }: { def: ComponentDef; rect: DOMRect }) {
       content = <CssSandbox html={def.html ?? ""} css={def.css} />;
       break;
     case "pack": {
-      const C = PACK_COMPONENTS[def.id] as React.FC<PackComponentProps> | undefined;
-      content = C ? <C text={def.label} /> : <span className="text-xs text-gray-400">{def.label}</span>;
+      content = <PackRenderer def={def} componentProps={{ text: def.label }} loadingLabel={def.label} />;
       break;
     }
     case "builtin": {
@@ -129,6 +131,7 @@ function HoverPreview({ def, rect }: { def: ComponentDef; rect: DOMRect }) {
 /* ---------- 主组件 ---------- */
 export function ComponentLibrary({ embedded = false }: { embedded?: boolean }) {
   const registry = useCanvasStore((s) => s.componentRegistry);
+  const activePageId = useWorkspaceStore((s) => s.activePageId);
   const addNode = useCanvasStore((s) => s.addNode);
   const unregisterComponent = useCanvasStore((s) => s.unregisterComponent);
   const clearTempComponents = useCanvasStore((s) => s.clearTempComponents);
@@ -139,6 +142,18 @@ export function ComponentLibrary({ embedded = false }: { embedded?: boolean }) {
   const [hoverDef, setHoverDef] = React.useState<ComponentDef | null>(null);
   const [hoverRect, setHoverRect] = React.useState<DOMRect | null>(null);
   const hoverTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [favoriteIds, setFavoriteIds] = React.useState<string[]>([]);
+  const [recentIds, setRecentIds] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    try {
+      setFavoriteIds(JSON.parse(localStorage.getItem(FAVORITES_KEY) ?? "[]") as string[]);
+      setRecentIds(JSON.parse(localStorage.getItem(RECENTS_KEY) ?? "[]") as string[]);
+    } catch {
+      setFavoriteIds([]);
+      setRecentIds([]);
+    }
+  }, []);
 
   const defs = React.useMemo(() => getMergedRegistry(registry), [registry]);
 
@@ -157,10 +172,29 @@ export function ComponentLibrary({ embedded = false }: { embedded?: boolean }) {
   const filtered = React.useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return normalDefs;
-    return normalDefs.filter(
-      (d) => d.label.toLowerCase().includes(q) || d.id.toLowerCase().includes(q),
-    );
+    return normalDefs
+      .filter((d) => d.label.toLowerCase().includes(q) || d.id.toLowerCase().includes(q))
+      .sort((a, b) => {
+        const score = (item: ComponentDef) => {
+          const label = item.label.toLowerCase();
+          const id = item.id.toLowerCase();
+          if (label === q || id === q) return 0;
+          if (label.startsWith(q)) return 1;
+          if (id.startsWith(q)) return 2;
+          return 3;
+        };
+        return score(a) - score(b) || a.label.localeCompare(b.label, "zh-CN");
+      });
   }, [normalDefs, query]);
+
+  const favorites = React.useMemo(
+    () => favoriteIds.map((id) => normalDefs.find((def) => def.id === id)).filter((def): def is ComponentDef => Boolean(def)),
+    [favoriteIds, normalDefs],
+  );
+  const recents = React.useMemo(
+    () => recentIds.map((id) => normalDefs.find((def) => def.id === id)).filter((def): def is ComponentDef => Boolean(def)),
+    [recentIds, normalDefs],
+  );
 
   // 二级分组: category → subCategory → items
   const grouped = React.useMemo(() => {
@@ -197,6 +231,19 @@ export function ComponentLibrary({ embedded = false }: { embedded?: boolean }) {
   const onDragStart = (e: React.DragEvent, id: string) => {
     e.dataTransfer.setData("application/routecanvas-component", id);
     e.dataTransfer.effectAllowed = "copy";
+    setRecentIds((current) => {
+      const next = [id, ...current.filter((item) => item !== id)].slice(0, 8);
+      localStorage.setItem(RECENTS_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const toggleFavorite = (id: string) => {
+    setFavoriteIds((current) => {
+      const next = current.includes(id) ? current.filter((item) => item !== id) : [id, ...current];
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
+      return next;
+    });
   };
 
   // 悬停预览
@@ -222,7 +269,7 @@ export function ComponentLibrary({ embedded = false }: { embedded?: boolean }) {
     reader.onload = () => {
       const dataUrl = reader.result as string;
       const store = useCanvasStore.getState();
-      const page = store.pages[0];
+      const page = store.pages.find((item) => item.id === activePageId) ?? store.pages[0];
       if (!page) { toast.warning("请先创建一个页面"); return; }
       addNode(page.id, "Image", {
         position: { x: 60 + Math.random() * 80, y: 60 + Math.random() * 80 },
@@ -241,11 +288,19 @@ export function ComponentLibrary({ embedded = false }: { embedded?: boolean }) {
       onDragStart={(e) => onDragStart(e, d.id)}
       onMouseEnter={(e) => onItemEnter(e, d)}
       onMouseLeave={onItemLeave}
-      className="cursor-grab active:cursor-grabbing rounded-md border border-gray-200 hover:border-blue-400 hover:bg-blue-50 px-2 py-2 text-center text-xs text-gray-700 select-none flex items-center justify-center gap-0.5"
+      className="group relative flex cursor-grab select-none items-center justify-center gap-0.5 rounded-md border border-gray-200 px-5 py-2 text-center text-xs text-gray-700 hover:border-blue-400 hover:bg-blue-50 active:cursor-grabbing"
       title={`拖入页面：${d.label}`}
     >
       <IconPreview id={d.id} />
       <span className="truncate">{d.label}</span>
+      <button
+        className={`absolute right-1 top-1/2 grid h-5 w-5 -translate-y-1/2 place-items-center rounded transition-opacity hover:bg-white ${favoriteIds.includes(d.id) ? "text-amber-500" : "text-gray-300 opacity-0 group-hover:opacity-100"}`}
+        title={favoriteIds.includes(d.id) ? "取消收藏" : "收藏组件"}
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => { event.preventDefault(); event.stopPropagation(); toggleFavorite(d.id); }}
+      >
+        <Star size={11} fill={favoriteIds.includes(d.id) ? "currentColor" : "none"} />
+      </button>
     </div>
   );
 
@@ -301,6 +356,18 @@ export function ComponentLibrary({ embedded = false }: { embedded?: boolean }) {
         onChange={(e) => { const f = e.target.files?.[0]; if (f) onImportImage(f); e.target.value = ""; }}
       />
       <div className="component-scrollbar flex-1 overflow-y-scroll p-2 pr-1.5 space-y-1">
+        {!query.trim() && favorites.length > 0 && (
+          <div className="mb-1 rounded-md border border-amber-100 bg-amber-50/50 p-1.5">
+            <div className="flex items-center gap-1 px-0.5 pb-1 text-[10px] font-semibold text-amber-600"><Star size={10} fill="currentColor" /> 收藏 <span className="font-normal text-amber-400">{favorites.length}</span></div>
+            <div className="grid grid-cols-2 gap-1.5 px-0.5">{favorites.map(renderItem)}</div>
+          </div>
+        )}
+        {!query.trim() && recents.length > 0 && (
+          <div className="mb-1 rounded-md border border-gray-200 bg-gray-50/70 p-1.5">
+            <div className="flex items-center gap-1 px-0.5 pb-1 text-[10px] font-semibold text-gray-500"><Clock3 size={10} /> 最近使用</div>
+            <div className="grid grid-cols-2 gap-1.5 px-0.5">{recents.map(renderItem)}</div>
+          </div>
+        )}
         {filteredTemp.length > 0 && (
           <div className="mb-1 rounded-md border border-amber-200 bg-amber-50/60 p-1.5">
             <div className="flex items-center gap-1 px-0.5 pb-1">

@@ -21,6 +21,8 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.dev.log
+.dev.err.log
 
 # local env files
 .env*.local
@@ -35,6 +37,7 @@ next-env.d.ts
 
 # data (optional backend sqlite)
 /data
+/.data
 
 # MCP build output
 /mcp/dist/

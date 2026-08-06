@@ -64,5 +64,3 @@ export const aceternityDefs: ComponentDef[] = [
   { source: "pack", id: "ac-hover-glow-card", label: "悬停发光卡", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField] },
   { source: "pack", id: "ac-wave-text-anim", label: "波浪文字动画", category: "Aceternity UI", pack: "aceternity", propsSchema: [textField, colorField, speedField] },
 ];
-
-export { aceternityComponents } from "./components";

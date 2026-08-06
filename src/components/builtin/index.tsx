@@ -137,7 +137,7 @@ const Image: React.FC<BuiltinProps> = ({ props }) => {
     );
   }
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt={props.text ?? ""} className="w-full h-full object-cover rounded-md" />;
+  return <img src={src} alt={props.text ?? ""} draggable={false} decoding="async" className="h-full w-full select-none rounded-md object-cover" />;
 };
 
 /* ---------- Card ---------- */
@@ -401,7 +401,7 @@ const Avatar: React.FC<BuiltinProps> = ({ props }) => {
     );
   }
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt="avatar" className="w-full h-full rounded-full object-cover" />;
+  return <img src={src} alt="avatar" draggable={false} decoding="async" className="h-full w-full select-none rounded-full object-cover" />;
 };
 
 /* ---------- Alert ---------- */

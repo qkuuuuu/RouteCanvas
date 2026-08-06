@@ -7,6 +7,7 @@ import { FileText, GitBranch } from "lucide-react";
 import { useCanvasStore } from "@/store/canvasStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import type { Page, Transition } from "@/types/schema";
+import { toast } from "@/lib/toast";
 
 interface PageSummaryData extends Record<string, unknown> {
   label: React.ReactNode;
@@ -167,11 +168,17 @@ export default function FlowOverview() {
           nodesConnectable
           onConnect={(connection: Connection) => {
             if (!connection.source || !connection.target || connection.source === connection.target) return;
-            const duplicate = transitions.some((transition) => transition.source.pageId === connection.source && transition.target.pageId === connection.target);
-            if (duplicate) return;
             const sourcePage = pages.find((page) => page.id === connection.source);
             const sourceNode = sourcePage?.nodes.find((node) => node.type === "Button") ?? sourcePage?.nodes[0];
-            const id = addTransition({ pageId: connection.source, nodeId: sourceNode?.id ?? `page:${connection.source}`, event: "onClick" }, { pageId: connection.target });
+            if (!sourceNode) {
+              toast.warning("请先在来源页面添加一个按钮或组件，再创建页面跳转");
+              return;
+            }
+            const id = addTransition({ pageId: connection.source, nodeId: sourceNode.id, event: "onClick", mode: "navigate" }, { pageId: connection.target });
+            if (!id) {
+              toast.warning("该组件到目标页面的相同交互已经存在");
+              return;
+            }
             if (id) select({ type: "transition", id });
           }}
           onEdgesDelete={(deletedEdges) => {

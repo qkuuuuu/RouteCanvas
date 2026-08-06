@@ -84,7 +84,8 @@ const SYSTEM_PROMPT = `你是 RouteCanvas 设计助手。RouteCanvas 是一个�
 - 合理布局：节点 position 相对页面左上角，x/y/宽/高取 8 的倍数（或构图套路里的网格值如 226/21），同区块严格对齐，避免重叠。
 - 移动端页面用 width:390 height:844；桌面页面用 width:800 height:600；落地页可用更高高度（如 720/960），多屏用 scroll 连线串成连续滚动页。
 - 生成质量：严格执行下方设计系统中的「高级感铁律」「组件选型速查」与「构图套路」——页面必须有背景氛围、戏剧化大标题、带圆角阴影的卡片、唯一醒目的 CTA，而不是白底裸组件堆叠。
-- 如果用户要求"重新设计/整体生成"，可以先 remove_page 清空再重建，或直接增量修改。
+- 默认增量修改（最高优先级）：用户提出调整/修改/美化类诉求时，一律用 update_node / remove_node 在现有页面上就地修改；严禁 add_page 新建页面、严禁 remove_page 删页重建、严禁整体替换——除非用户明确说了“新页面/再加一页/重新设计整个页面/推倒重来”。
+- 仅当用户明确要求“重新设计/整体重做”时，才可在当前页 remove_node 逐个清空后重建（同样不新建页面）。
 - 不要编造不存在的 nodeId/pageId。
 
 ## 组件白名单（type 只能从中选）
@@ -98,6 +99,8 @@ export function buildChatMessages(
   state: CanvasState,
   history: { role: "user" | "assistant"; content: string }[],
   userInstruction: string,
+  /** 用户在画布上选中的元素上下文（可选）：让“把这个改大”这类指代成立 */
+  selectionContext?: string,
 ): { role: "system" | "user" | "assistant"; content: string }[] {
   const system = SYSTEM_PROMPT
     .replace("{{COMPONENTS}}", buildComponentList(state))
@@ -113,10 +116,13 @@ export function buildChatMessages(
     messages.push({ role: h.role, content: h.content });
   }
 
-  // 当前指令 + 画布现状
+  // 当前指令 + 画布现状 + 选中元素（如有）
+  const selectionBlock = selectionContext
+    ? `\n\n## 用户当前选中的元素\n${selectionContext}\n（重要：用户说“这个/它/当前元素/选中的”等指代时，均指上述选中节点；请针对其 nodeId 做增量修改，不要误改其他节点，也不要删页重建）`
+    : "";
   messages.push({
     role: "user",
-    content: `## 当前画布状态\n${buildCanvasContext(state)}\n\n## 用户指令\n${userInstruction}`,
+    content: `## 当前画布状态\n${buildCanvasContext(state)}${selectionBlock}\n\n## 用户指令\n${userInstruction}`,
   });
 
   return messages;

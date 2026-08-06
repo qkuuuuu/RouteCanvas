@@ -14,6 +14,7 @@ import type {
   NodeProps,
   Viewport,
   Meta,
+  CanvasComment,
 } from "@/types/schema";
 import { genId } from "@/lib/id";
 
@@ -60,6 +61,7 @@ export interface CanvasStore extends CanvasState {
     input?: Partial<NodeInput>,
   ) => string | null;
   updateNode: (pageId: string, nodeId: string, patch: Partial<UINode>) => void;
+  reorderNodes: (pageId: string, orderedIds: string[]) => void;
   updateNodeProps: (
     pageId: string,
     nodeId: string,
@@ -83,11 +85,16 @@ export interface CanvasStore extends CanvasState {
   ) => number;
   // transitions
   addTransition: (
-    source: { pageId: string; nodeId: string; event?: string },
+    source: { pageId: string; nodeId: string; event?: string; mode?: "navigate" | "scroll" },
     target: { pageId: string; params?: Record<string, string> },
   ) => string | null;
   updateTransition: (id: string, patch: Partial<Transition>) => void;
   removeTransition: (id: string) => void;
+  replacePageTransitions: (pageId: string, transitions: Transition[]) => void;
+  // comments
+  addComment: (input: { pageId: string; x: number; y: number; text: string; nodeId?: string | null; author?: string }) => string;
+  updateComment: (id: string, patch: Partial<CanvasComment>) => void;
+  removeComment: (id: string) => void;
   // selection
   select: (selection: Selection) => void;
   clearSelection: () => void;
@@ -141,6 +148,7 @@ const emptyState = (): CanvasState => ({
     },
   },
   componentRegistry: [],
+  comments: [],
 });
 
 // persist 与 zundo 都只关注文档子集（排除 selection 等瞬态）
@@ -150,6 +158,7 @@ const docSubset = (s: CanvasStore) => ({
   transitions: s.transitions,
   designSystem: s.designSystem,
   componentRegistry: s.componentRegistry,
+  comments: s.comments,
 });
 
 export const useCanvasStore = create<CanvasStore>()(
@@ -284,6 +293,18 @@ export const useCanvasStore = create<CanvasStore>()(
             meta: { ...s.meta, updatedAt: nowISO() },
           })),
 
+        reorderNodes: (pageId, orderedIds) =>
+          set((s) => {
+            const order = new Map(orderedIds.map((id, index) => [id, orderedIds.length - index]));
+            return {
+              pages: s.pages.map((page) => page.id === pageId ? {
+                ...page,
+                nodes: page.nodes.map((node) => order.has(node.id) ? { ...node, zIndex: order.get(node.id) } : node),
+              } : page),
+              meta: { ...s.meta, updatedAt: nowISO() },
+            };
+          }),
+
         updateNodeResponsive: (pageId, nodeId, breakpoint, patch) =>
           set((s) => ({
             pages: s.pages.map((p) =>
@@ -413,12 +434,18 @@ export const useCanvasStore = create<CanvasStore>()(
 
         /* ---------- transitions ---------- */
         addTransition: (source, target) => {
-          // 避免重复连线
+          const sourcePage = get().pages.find((page) => page.id === source.pageId);
+          const targetPage = get().pages.find((page) => page.id === target.pageId);
+          if (!sourcePage || !targetPage || !sourcePage.nodes.some((node) => node.id === source.nodeId)) return null;
+          // 只有完全相同的事件、模式和参数才算重复连线。
           const exists = get().transitions.some(
             (t) =>
               t.source.pageId === source.pageId &&
               t.source.nodeId === source.nodeId &&
-              t.target.pageId === target.pageId,
+              t.target.pageId === target.pageId &&
+              (t.source.event ?? "onClick") === (source.event ?? "onClick") &&
+              (t.mode ?? "navigate") === (source.mode ?? "navigate") &&
+              JSON.stringify(t.target.params ?? {}) === JSON.stringify(target.params ?? {}),
           );
           if (exists) return null;
           const id = genId("trans");
@@ -430,6 +457,7 @@ export const useCanvasStore = create<CanvasStore>()(
               event: source.event ?? "onClick",
             },
             target: { pageId: target.pageId, params: target.params },
+            mode: source.mode,
           };
           set((s) => ({
             transitions: [...s.transitions, tr],
@@ -451,6 +479,48 @@ export const useCanvasStore = create<CanvasStore>()(
           set((s) => ({
             transitions: s.transitions.filter((t) => t.id !== id),
             selection: { type: null, id: null },
+            meta: { ...s.meta, updatedAt: nowISO() },
+          })),
+
+        replacePageTransitions: (pageId, transitions) =>
+          set((s) => ({
+            transitions: [
+              ...s.transitions.filter((t) => t.source.pageId !== pageId),
+              ...transitions,
+            ],
+            meta: { ...s.meta, updatedAt: nowISO() },
+          })),
+
+        /* ---------- comments ---------- */
+        addComment: (input) => {
+          const id = genId("comment");
+          const comment: CanvasComment = {
+            id,
+            pageId: input.pageId,
+            nodeId: input.nodeId ?? null,
+            x: input.x,
+            y: input.y,
+            text: input.text,
+            author: input.author ?? "我",
+            createdAt: nowISO(),
+            resolved: false,
+          };
+          set((s) => ({
+            comments: [...(s.comments ?? []), comment],
+            meta: { ...s.meta, updatedAt: nowISO() },
+          }));
+          return id;
+        },
+
+        updateComment: (id, patch) =>
+          set((s) => ({
+            comments: (s.comments ?? []).map((c) => (c.id === id ? { ...c, ...patch } : c)),
+            meta: { ...s.meta, updatedAt: nowISO() },
+          })),
+
+        removeComment: (id) =>
+          set((s) => ({
+            comments: (s.comments ?? []).filter((c) => c.id !== id),
             meta: { ...s.meta, updatedAt: nowISO() },
           })),
 
@@ -484,6 +554,7 @@ export const useCanvasStore = create<CanvasStore>()(
             transitions: doc.transitions,
             designSystem: doc.designSystem ?? emptyState().designSystem,
             componentRegistry: doc.componentRegistry ?? [],
+            comments: doc.comments ?? [],
             selection: { type: null, id: null },
           }),
 

@@ -26,4 +26,78 @@ body {
 .component-scrollbar::-webkit-scrollbar-thumb { background: #aeb8c5; border: 2px solid #f8fafc; border-radius: 10px; }
 .component-scrollbar::-webkit-scrollbar-thumb:hover { background: #8793a3; }
 
+/* ===== 品牌与微动效 ===== */
+::selection {
+  background: rgba(99, 102, 241, 0.18);
+}
+
+.brand-gradient {
+  background: linear-gradient(135deg, #6366f1, #ec4899);
+}
+
+.brand-gradient-text {
+  background: linear-gradient(90deg, #6366f1, #ec4899);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes rc-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes rc-scale-in {
+  from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes rc-slide-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.anim-fade-in { animation: rc-fade-in 0.18s ease-out; }
+.anim-scale-in { animation: rc-scale-in 0.16s cubic-bezier(0.22, 1, 0.36, 1); transform-origin: top right; }
+.anim-slide-up { animation: rc-slide-up 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* 按钮按压反馈 */
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* 品牌渐变按钮 */
+.btn-brand {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6 55%, #ec4899);
+  background-size: 160% 160%;
+  transition: background-position 0.35s ease, box-shadow 0.2s ease, transform 0.12s ease;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35);
+}
+.btn-brand:hover {
+  background-position: 100% 50%;
+  box-shadow: 0 4px 18px rgba(139, 92, 246, 0.45);
+}
+
+/* 卡片悬浮升起 */
+.card-lift {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+/* 加载环 */
+@keyframes rc-spin {
+  to { transform: rotate(360deg); }
+}
+.loader-ring {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid rgba(99, 102, 241, 0.2);
+  border-top-color: #6366f1;
+  animation: rc-spin 0.8s linear infinite;
+}
+
 /* React Flow base styles are imported via 'reactflow/dist/style.css' in components */

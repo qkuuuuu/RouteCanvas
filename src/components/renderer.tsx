@@ -1,11 +1,10 @@
 "use client";
 import * as React from "react";
-import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
 import type { ComponentDef, NodeProps } from "@/types/schema";
 import { BUILTIN_COMPONENTS } from "./builtin";
-import { PACK_COMPONENTS } from "./packs";
 import type { PackComponentProps } from "./packs";
+import { PackRenderer } from "./packs/PackRenderer";
 import { CssSandbox } from "./sandbox/cssSandbox";
 import { TailwindPlayProvider } from "./sandbox/TailwindPlayProvider";
 import { transpileComponent } from "./sandbox/runtimeSandbox";
@@ -94,16 +93,6 @@ function RuntimeComponent({
   );
 }
 
-/* ---------- R3F 动态加载包装器（仅客户端） ---------- */
-const R3FLazy = dynamic(
-  () => import("./packs/r3f-scenes/components").then((m) => m.R3FRenderer),
-  { ssr: false, loading: () => <Placeholder label="3D 场景加载中..." /> }
-);
-
-function R3FWrapper({ id, props }: { id: string; props: PackComponentProps }) {
-  return <R3FLazy id={id} {...props} />;
-}
-
 /**
  * 统一渲染器：按组件 source 分发。
  * builtin → 内置组件；pack → 预打包组件；runtime → 沙箱转译；css → CssSandbox。
@@ -131,19 +120,11 @@ export function renderComponent({
       return <C props={finalProps} interactive={interactive} onTrigger={onTrigger} />;
     }
     case "pack": {
-      // R3F 组件动态加载（避免 SSR 报错）
-      if (def.id.startsWith("r3f-")) {
-        return <R3FWrapper id={def.id} props={{ text: props.text, imageSrc: props.imageSrc, interactive, onTrigger, ...(props.custom ?? {}) }} />;
-      }
-      const C = PACK_COMPONENTS[def.id] as React.FC<PackComponentProps> | undefined;
-      if (!C) return <Placeholder label={`[pack] ${def.id}`} />;
       return (
-        <C
-          text={props.text}
-          imageSrc={props.imageSrc}
-          interactive={interactive}
-          onTrigger={onTrigger}
-          {...(props.custom ?? {})}
+        <PackRenderer
+          def={def}
+          loadingLabel={def.id.startsWith("r3f-") ? "3D 场景加载中…" : "组件加载中…"}
+          componentProps={{ text: props.text, imageSrc: props.imageSrc, interactive, onTrigger, ...(props.custom ?? {}) } as PackComponentProps}
         />
       );
     }

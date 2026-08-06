@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { resolveAiEndpoint } from "@/lib/aiEndpoint";
 
 /**
  * POST /api/ai/chat — AI 对话式画布编辑
@@ -6,17 +7,19 @@ import { NextRequest, NextResponse } from "next/server";
  * 请求体:
  *   { messages: [{role, content}], model?: string, apiKey?: string }
  *
- * 与 /api/ai 共用 API Key 策略（用户 key 优先，其次环境变量）。
+ * API Key 策略：用户在全局 AI Agent 中配置的 key 优先，其次环境变量。
  * AI 被约束为返回结构化 operations JSON，由前端解析并应用到画布。
  */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { messages, model, apiKey: userKey, baseUrl } = body as {
+    const { messages, model, apiKey: userKey, baseUrl, creativity } = body as {
       messages?: { role: string; content: unknown }[];
       model?: string;
       apiKey?: string;
       baseUrl?: string;
+      /** 创意温度 0-1：设计排版类调用传高值释放想象力，结构化修改保持低值 */
+      creativity?: number;
     };
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -37,9 +40,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const apiBase = (baseUrl?.trim() || "https://api.openai.com/v1").replace(/\/$/, "");
-    const endpoint = apiBase.endsWith("/chat/completions") ? apiBase : `${apiBase}/chat/completions`;
-    const parsedEndpoint = new URL(endpoint);
+    let parsedEndpoint: URL;
+    let officialOpenAi = false;
+    try {
+      ({ endpoint: parsedEndpoint, officialOpenAi } = resolveAiEndpoint(baseUrl));
+    } catch (error) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 400 });
+    }
     if (!(["http:", "https:"] as string[]).includes(parsedEndpoint.protocol)) {
       return NextResponse.json({ error: "API Base URL 仅支持 HTTP 或 HTTPS" }, { status: 400 });
     }
@@ -53,8 +60,12 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         model: model ?? "gpt-4o-mini",
         messages,
-        temperature: 0.4,
-        response_format: { type: "json_object" },
+        temperature: typeof creativity === "number" && Number.isFinite(creativity)
+          ? Math.min(Math.max(creativity, 0), 1.2)
+          : 0.4,
+        // 像素级排版 JSON 动辄数千 token：不显式给足上限，网关默认值会截断输出导致解析失败
+        max_tokens: 16000,
+        ...(officialOpenAi ? { max_completion_tokens: 16000, response_format: { type: "json_object" } } : {}),
       }),
     });
 

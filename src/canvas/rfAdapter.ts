@@ -1,91 +1,8 @@
-import type { Edge, Node } from "@xyflow/react";
-import type {
-  CanvasState,
-  Page,
-  Transition,
-  UINode,
-  ComponentDef,
-} from "@/types/schema";
-
-/* React Flow 节点 data 载荷 */
-export interface PageNodeData {
-  kind: "page";
-  page: Page;
-  [key: string]: unknown;
-}
-export interface UINodeData {
-  kind: "ui";
-  node: UINode;
-  pageId: string;
-  component?: ComponentDef; // 节点 type 对应的注册表项（便于渲染）
-  [key: string]: unknown;
-}
-export type RFNodeData = PageNodeData | UINodeData;
-
-export type RFNode = Node<RFNodeData>;
-export type RFEdge = Edge;
-
-export const PAGE_NODE_TYPE = "page" as const;
-export const UI_NODE_TYPE = "ui" as const;
-export const TRANSITION_EDGE_TYPE = "transition" as const;
-
 /**
- * 规范 store → React Flow nodes。
- * page = group 节点（绝对坐标 = layout）；UI 节点 = parentId=pageId + extent:parent（相对坐标）。
- * 页面折叠时不输出子节点。
+ * 组件默认尺寸表
+ * 历史上本文件承担 React Flow 适配（toRFNodes/toRFEdges），
+ * V1.1 画布迁移到自绘 DesignCanvas 后，RF 适配代码已移除，仅保留尺寸表。
  */
-export function toRFNodes(state: CanvasState): RFNode[] {
-  const nodes: RFNode[] = [];
-  // 预建 registry Map 避免每个节点都 .find()
-  const regMap = new Map(state.componentRegistry.map((c) => [c.id, c]));
-  for (const page of state.pages) {
-    const collapsed = page.layout.collapsed ?? false;
-    nodes.push({
-      id: page.id,
-      type: PAGE_NODE_TYPE,
-      position: { x: page.layout.x, y: page.layout.y },
-      data: { kind: "page", page } as PageNodeData,
-      width: page.layout.width,
-      height: collapsed ? 44 : page.layout.height,
-      className: "routecanvas-page",
-    });
-    if (collapsed) continue;
-    for (const node of page.nodes) {
-      nodes.push({
-        id: node.id,
-        type: UI_NODE_TYPE,
-        position: { x: node.position.x, y: node.position.y },
-        data: {
-          kind: "ui",
-          node,
-          pageId: page.id,
-          component: regMap.get(node.type),
-        } as UINodeData,
-        width: node.size.width,
-        height: node.size.height,
-        parentId: page.id,
-        extent: "parent",
-        zIndex: node.zIndex ?? 0,
-        className: "routecanvas-uinode",
-      });
-    }
-  }
-  return nodes;
-}
-
-/** 规范 store → React Flow edges（transition: source=UI 节点 → target=页面） */
-export function toRFEdges(state: CanvasState): RFEdge[] {
-  return state.transitions.map((t: Transition): RFEdge => ({
-    id: t.id,
-    source: t.source.nodeId,
-    target: t.target.pageId,
-    sourceHandle: "source",
-    targetHandle: "target",
-    type: TRANSITION_EDGE_TYPE,
-    data: { transition: t },
-    markerEnd: "arrowclosed",
-  }));
-}
 
 /** 各组件类型的默认尺寸（拖入画布时的初始宽高） */
 const DEFAULT_SIZES: Record<string, { width: number; height: number }> = {
@@ -217,16 +134,4 @@ export function defaultSizeForType(type: string): { width: number; height: numbe
     return { width: 160, height: 56 };
   }
   return FALLBACK_SIZE;
-}
-
-/** 工具：从 RF node id 找到所属页面与节点 */
-export function locateNode(
-  state: CanvasState,
-  nodeId: string,
-): { page: Page; node: UINode } | null {
-  for (const page of state.pages) {
-    const node = page.nodes.find((n) => n.id === nodeId);
-    if (node) return { page, node };
-  }
-  return null;
 }

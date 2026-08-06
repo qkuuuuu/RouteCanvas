@@ -69,5 +69,3 @@ export const reactBitsDefs: ComponentDef[] = [
   { source: "pack", id: "rb-spotlight-text", label: "聚光文字", category: "React Bits", pack: "react-bits", propsSchema: [textField, colorField, speedField] },
   { source: "pack", id: "rb-tilt-gallery", label: "倾斜画廊", category: "React Bits", pack: "react-bits", propsSchema: [textField, colorField] },
 ];
-
-export { reactBitsComponents } from "./components";

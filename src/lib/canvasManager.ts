@@ -46,6 +46,7 @@ function saveCurrentDoc(canvasId: string) {
     pages: s.pages,
     transitions: s.transitions,
     componentRegistry: s.componentRegistry,
+    comments: s.comments ?? [],
   };
   localStorage.setItem(docKey(canvasId), JSON.stringify(doc));
 }

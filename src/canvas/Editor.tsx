@@ -10,23 +10,27 @@ import { ToastContainer } from "@/lib/toast";
 import { initCanvasManager, syncPageCount } from "@/lib/canvasManager";
 import { useMcpSync } from "@/lib/mcpSync";
 import { ChatPanel } from "@/panels/ChatPanel";
-import { AiAnnotateOverlay } from "@/canvas/AiAnnotateOverlay";
-import { useAnnotateStore } from "@/store/annotateStore";
 import { DesignCanvas } from "@/design/DesignCanvas";
 import { DesignSidebar } from "@/design/DesignSidebar";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { WorkspaceSidebar } from "@/panels/WorkspaceSidebar";
 import { createProject } from "@/lib/canvasManager";
+import { PrototypePlayer } from "@/canvas/PrototypePlayer";
+import { AiAgentDialog } from "@/components/AiAgentDialog";
+import { AutomationDialog } from "@/components/AutomationDialog";
+import { triggerAutomations } from "@/data/automation";
+import { AiDiffDialog } from "@/components/AiDiffDialog";
 
 export default function Editor() {
   const { clear } = useTemporal();
   const [hydrated, setHydrated] = useState(false);
-  const annotateTarget = useAnnotateStore((s) => s.target);
-  const closeAnnotate = useAnnotateStore((s) => s.close);
   const view = useWorkspaceStore((s) => s.view);
   const setActivePageId = useWorkspaceStore((s) => s.setActivePageId);
   const studioOpen = useWorkspaceStore((s) => s.studioOpen);
   const openStudio = useWorkspaceStore((s) => s.openStudio);
+  const [prototypeOpen, setPrototypeOpen] = useState(false);
+  const [aiAgentOpen, setAiAgentOpen] = useState(false);
+  const [automationOpen, setAutomationOpen] = useState(false);
 
   // MCP 双向同步（编辑器 ↔ canvas.json）
   const { syncNow, syncState } = useMcpSync(true);
@@ -37,11 +41,15 @@ export default function Editor() {
     initCanvasManager();
     // 页面数量变化时自动同步到画布列表
     let prevLen = useCanvasStore.getState().pages.length;
+    let knownPageIds = new Set(useCanvasStore.getState().pages.map((page) => page.id));
     const unsub = useCanvasStore.subscribe((s) => {
       if (s.pages.length !== prevLen) {
         prevLen = s.pages.length;
         syncPageCount();
       }
+      const newPages = s.pages.filter((page) => !knownPageIds.has(page.id));
+      knownPageIds = new Set(s.pages.map((page) => page.id));
+      newPages.forEach((page) => { void triggerAutomations("page_created", page.id); });
     });
     return unsub;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -69,10 +77,11 @@ export default function Editor() {
 
   if (!hydrated) {
     return (
-      <div className="h-screen w-screen grid place-items-center bg-gray-100">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm text-gray-500">加载画布...</span>
+      <div className="h-screen w-screen grid place-items-center bg-[#f4f4f2]">
+        <div className="anim-fade-in flex flex-col items-center gap-4">
+          <span className="grid h-10 w-10 place-items-center rounded-xl brand-gradient text-sm font-bold text-white shadow-lg">R</span>
+          <div className="loader-ring" />
+          <span className="text-xs text-gray-400">正在加载画布…</span>
         </div>
       </div>
     );
@@ -84,6 +93,9 @@ export default function Editor() {
         <Toolbar
           onMcpSync={syncNow}
           mcpSyncState={syncState}
+          onPrototype={() => setPrototypeOpen(true)}
+          onOpenAiAgent={() => setAiAgentOpen(true)}
+          onOpenAutomation={() => setAutomationOpen(true)}
         />
         <div className="flex flex-1 min-h-0">
           <WorkspaceSidebar />
@@ -100,6 +112,7 @@ export default function Editor() {
                 setActivePageId(id);
                 openStudio();
               }}
+              onOpenAiAgent={() => setAiAgentOpen(true)}
             />
           </section>
           {studioOpen && <section className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
@@ -111,9 +124,10 @@ export default function Editor() {
           </section>}
         </div>
       </div>
-      {annotateTarget && (
-        <AiAnnotateOverlay target={annotateTarget} onClose={closeAnnotate} />
-      )}
+      <PrototypePlayer open={prototypeOpen} onClose={() => setPrototypeOpen(false)} />
+      <AiAgentDialog open={aiAgentOpen} onClose={() => setAiAgentOpen(false)} />
+      <AutomationDialog open={automationOpen} onClose={() => setAutomationOpen(false)} />
+      <AiDiffDialog />
       <ToastContainer />
     </ErrorBoundary>
   );

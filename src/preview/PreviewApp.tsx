@@ -245,24 +245,30 @@ function PreviewNode({ node, registry, routeMap, navigate, offsetX = 0, offsetY 
   );
 }
 
-export default function PreviewApp() {
-  const [doc, setDoc] = useState<CanvasState | null>(null);
+export default function PreviewApp({ initialDocument = null, shared = false }: { initialDocument?: CanvasState | null; shared?: boolean }) {
+  const [doc, setDoc] = useState<CanvasState | null>(initialDocument);
   const [activePageId, setActivePageId] = useState<string | null>(null);
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [showLogin, setShowLogin] = useState(false);
   const [pendingTarget, setPendingTarget] = useState<string | null>(null);
 
   React.useEffect(() => {
+    if (initialDocument) {
+      const entry = findEntry(initialDocument.pages);
+      setActivePageId(entry?.id ?? null);
+      return;
+    }
     const d = loadFromStorage();
     if (d) {
       setDoc(d);
       const entry = findEntry(d.pages);
       setActivePageId(entry?.id ?? null);
     }
-  }, []);
+  }, [initialDocument]);
 
   // 监听 storage 事件（跨标签页）+ BroadcastChannel（同标签页）
   React.useEffect(() => {
+    if (initialDocument) return;
     const onStorage = () => {
       const d = loadFromStorage();
       if (d) setDoc(d);
@@ -283,7 +289,7 @@ export default function PreviewApp() {
       window.removeEventListener("storage", onStorage);
       bc?.close();
     };
-  }, []);
+  }, [initialDocument]);
 
   const routeMap = useMemo(
     () => (doc ? buildRouteMap(doc.transitions) : new Map()),
@@ -340,7 +346,7 @@ export default function PreviewApp() {
           className="text-gray-500 hover:text-gray-800 text-sm inline-flex items-center gap-1"
           onClick={() => { window.location.href = "/"; }}
         >
-          <ArrowLeft size={14} /> 返回编辑器
+          <ArrowLeft size={14} /> {shared ? "打开 RouteCanvas" : "返回编辑器"}
         </button>
         <div className="text-sm font-medium text-gray-800">{page.name}</div>
         <code className="text-[11px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
@@ -352,6 +358,7 @@ export default function PreviewApp() {
           </span>
         )}
         <div className="flex-1" />
+        {shared && <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-600">只读分享</span>}
         <div className="flex items-center gap-1 bg-gray-100 rounded p-0.5">
           <button
             className={`p-1 rounded ${device === "desktop" ? "bg-white shadow" : ""}`}

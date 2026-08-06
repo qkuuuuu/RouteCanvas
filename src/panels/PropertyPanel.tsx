@@ -2,10 +2,27 @@
 import * as React from "react";
 import { useCanvasStore } from "@/store/canvasStore";
 import { findComponentDef } from "@/components/registry";
-import { ChevronUp, ChevronDown, ArrowUpToLine, ArrowDownToLine, GitBranch, MousePointerClick } from "lucide-react";
-import type { Field, NodeProps, Page, Transition, UINode } from "@/types/schema";
+import { ChevronUp, ChevronDown, ArrowRight, ArrowUpToLine, ArrowDownToLine, GitBranch, History, MousePointerClick, RotateCcw } from "lucide-react";
+import type { Field, Layout, NodeProps, Page, Transition, UINode } from "@/types/schema";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { resolveNodeFrame } from "@/design/frame";
+import { restorePageSnapshot, useVersionStore } from "@/lib/pageVersions";
+import { toast } from "@/lib/toast";
+
+function VersionMiniature({ layout, nodes, label }: { layout: Layout; nodes: UINode[]; label: string }) {
+  return (
+    <div className="min-w-0 flex-1">
+      <div className="mb-1 text-[8px] font-medium uppercase text-gray-400">{label}</div>
+      <div className="relative h-12 overflow-hidden rounded-sm border border-gray-200 bg-white">
+        {nodes.filter((node) => !node.hidden).slice(0, 40).map((node) => {
+          const custom = node.props?.custom ?? {};
+          const color = node.type === "Text" ? (custom.color as string) || "#64748b" : node.type === "Button" ? "#6366f1" : (custom.bgColor as string) || (node.type === "Image" ? "#cbd5e1" : "#e5e7eb");
+          return <span key={node.id} className="absolute rounded-[1px]" style={{ left: `${node.position.x / Math.max(1, layout.width) * 100}%`, top: `${node.position.y / Math.max(1, layout.height) * 100}%`, width: `${Math.max(1.5, node.size.width / Math.max(1, layout.width) * 100)}%`, height: `${Math.max(2, node.size.height / Math.max(1, layout.height) * 100)}%`, background: color, opacity: node.type === "Text" ? 0.8 : 1 }} />;
+        })}
+      </div>
+    </div>
+  );
+}
 
 /* ---------- 通用字段编辑器 ---------- */
 function FieldEditor({
@@ -145,6 +162,7 @@ export function PropertyPanel() {
   const transitions = useCanvasStore((s) => s.transitions);
   const registry = useCanvasStore((s) => s.componentRegistry);
   const designSystem = useCanvasStore((s) => s.designSystem);
+  const versionSnapshots = useVersionStore((s) => s.snapshots);
 
   const updatePage = useCanvasStore((s) => s.updatePage);
   const updateNode = useCanvasStore((s) => s.updateNode);
@@ -183,6 +201,9 @@ export function PropertyPanel() {
   if (selection.type === "page") {
     const page = pages.find((p) => p.id === selection.id) as Page | undefined;
     if (!page) return null;
+    const pageSnapshots = versionSnapshots
+      .filter((item) => item.pageId === page.id)
+      .sort((a, b) => b.at - a.at);
     return (
       <aside className="w-56 shrink-0 border-l border-gray-200 bg-white overflow-y-auto">
         <div className={section}>
@@ -259,6 +280,46 @@ export function PropertyPanel() {
             </div>
           </div>
         </div>
+        <div className={section}>
+          <div className={`${title} flex items-center gap-1`}><History size={12} /> 版本历史</div>
+          {pageSnapshots.length === 0 ? (
+            <p className="text-[11px] leading-5 text-gray-400">AI 重做或覆盖页面前会自动保存版本。</p>
+          ) : (
+            <div className="space-y-1.5">
+              {pageSnapshots.map((snapshot) => (
+                <div key={snapshot.at} className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1.5">
+                  <div className="mb-2 flex items-center gap-1.5">
+                    <VersionMiniature layout={snapshot.layout} nodes={snapshot.nodes} label="保存版本" />
+                    <ArrowRight size={10} className="mt-3 shrink-0 text-gray-300" />
+                    <VersionMiniature layout={page.layout} nodes={page.nodes} label="当前" />
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-[11px] font-medium text-gray-700">{snapshot.label}</div>
+                      <div className="mt-0.5 text-[9px] text-gray-400">
+                        {new Date(snapshot.at).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        <span className="mx-1">·</span>{snapshot.nodes.length} 节点
+                        <span className="mx-1">·</span>{snapshot.transitions.length} 交互
+                      </div>
+                    </div>
+                    <button
+                      className="grid h-6 w-6 shrink-0 place-items-center rounded text-indigo-600 hover:bg-indigo-100"
+                      title="恢复这个版本"
+                      onClick={() => {
+                        if (!window.confirm(`恢复「${snapshot.label}」？当前页面会先自动保存。`)) return;
+                        const restored = restorePageSnapshot(page.id, snapshot.at);
+                        if (restored) toast.success("已恢复页面版本；恢复前状态也已保存");
+                        else toast.error("版本恢复失败");
+                      }}
+                    >
+                      <RotateCcw size={12} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </aside>
     );
   }
@@ -277,6 +338,9 @@ export function PropertyPanel() {
     const frame = resolveNodeFrame(node, breakpoint);
     const clickTransition = transitions.find((item) => item.source.pageId === pageId && item.source.nodeId === node.id && (item.source.event ?? "onClick") === "onClick");
     const clickTarget = clickTransition?.target.pageId ?? "";
+    const clickAction = clickTransition ? (clickTransition.mode === "scroll" ? "scroll" : "navigate") : "none";
+    const scrollTargets = page.nodes.filter((item) => item.id !== node.id && !item.hidden);
+    const scrollTargetId = clickTransition?.target.params?.anchorNodeId ?? "";
     const updateFrame = (patch: Partial<typeof frame>) => {
       if (breakpoint === "desktop") {
         updateNode(pageId, node.id, {
@@ -360,23 +424,58 @@ export function PropertyPanel() {
           <label className="mb-1 block text-[11px] text-gray-500">点击后</label>
           <select
             className="h-8 w-full rounded border border-gray-300 px-2 text-xs text-gray-700 outline-none focus:border-indigo-500"
-            value={clickTarget}
+            value={clickAction}
             onChange={(event) => {
-              const targetPageId = event.target.value;
-              if (!targetPageId) {
+              const action = event.target.value;
+              if (action === "none") {
                 if (clickTransition) removeTransition(clickTransition.id);
                 return;
               }
+              const firstOtherPage = pages.find((item) => item.id !== pageId)?.id ?? pageId;
+              const firstAnchor = scrollTargets[0]?.id;
               if (clickTransition) {
-                updateTransition(clickTransition.id, { mode: "navigate", target: { ...clickTransition.target, pageId: targetPageId } });
+                updateTransition(clickTransition.id, action === "scroll"
+                  ? { mode: "scroll", target: { pageId, params: firstAnchor ? { anchorNodeId: firstAnchor } : undefined } }
+                  : { mode: "navigate", target: { pageId: firstOtherPage } });
               } else {
-                addTransition({ pageId, nodeId: node.id, event: "onClick" }, { pageId: targetPageId });
+                addTransition(
+                  { pageId, nodeId: node.id, event: "onClick", mode: action === "scroll" ? "scroll" : "navigate" },
+                  action === "scroll"
+                    ? { pageId, params: firstAnchor ? { anchorNodeId: firstAnchor } : undefined }
+                    : { pageId: firstOtherPage },
+                );
               }
             }}
           >
-            <option value="">无动作</option>
-            {pages.filter((item) => item.id !== pageId).map((item) => <option key={item.id} value={item.id}>前往 {item.name}</option>)}
+            <option value="none">无动作</option>
+            <option value="navigate">前往页面</option>
+            <option value="scroll">滚动到区域</option>
           </select>
+          {clickAction === "navigate" && clickTransition && (
+            <select
+              className="mt-2 h-8 w-full rounded border border-gray-300 px-2 text-xs text-gray-700 outline-none focus:border-indigo-500"
+              value={clickTarget}
+              onChange={(event) => updateTransition(clickTransition.id, { mode: "navigate", target: { pageId: event.target.value } })}
+            >
+              {pages.filter((item) => item.id !== pageId).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+              {pages.length <= 1 && <option value={pageId}>请先新建另一个页面</option>}
+            </select>
+          )}
+          {clickAction === "scroll" && clickTransition && (
+            <select
+              className="mt-2 h-8 w-full rounded border border-gray-300 px-2 text-xs text-gray-700 outline-none focus:border-indigo-500"
+              value={scrollTargetId}
+              onChange={(event) => updateTransition(clickTransition.id, {
+                mode: "scroll",
+                target: { pageId, params: event.target.value ? { anchorNodeId: event.target.value } : undefined },
+              })}
+            >
+              <option value="">页面顶部</option>
+              {scrollTargets.map((item) => (
+                <option key={item.id} value={item.id}>{item.props?.text?.slice(0, 28) || item.type}</option>
+              ))}
+            </select>
+          )}
           {clickTransition && (
             <button className="mt-2 inline-flex h-7 w-full items-center justify-center gap-1 rounded border border-indigo-200 text-[11px] font-medium text-indigo-600 hover:bg-indigo-50" onClick={() => { setSelection({ type: "transition", id: clickTransition.id }); setView("flow"); }}>
               <GitBranch size={12} /> 在流程中查看

@@ -39,9 +39,9 @@ export function WorkspaceSidebar() {
   if (collapsed) {
     return (
       <aside className="flex w-11 shrink-0 flex-col items-center gap-1 border-r border-gray-200 bg-white py-2">
-        <button className="grid h-8 w-8 place-items-center rounded text-gray-500 hover:bg-gray-100" onClick={toggle} title="展开工作区"><ChevronRight size={16} /></button>
+        <button className="grid h-8 w-8 place-items-center rounded text-gray-500 transition-colors hover:bg-gray-100" onClick={toggle} title="展开工作区"><ChevronRight size={16} /></button>
         <div className="my-1 h-px w-6 bg-gray-100" />
-        <button className="grid h-8 w-8 place-items-center rounded text-indigo-600 hover:bg-indigo-50" onClick={createBlankProject} title="新建设计项目"><FilePlus2 size={16} /></button>
+        <button className="grid h-8 w-8 place-items-center rounded text-indigo-600 transition-colors hover:bg-indigo-50" onClick={createBlankProject} title="新建设计项目"><FilePlus2 size={16} /></button>
         <LayoutTemplate size={16} className="mt-1 text-gray-400" />
       </aside>
     );
@@ -50,15 +50,15 @@ export function WorkspaceSidebar() {
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-gray-200 bg-white">
       <div className="flex h-11 items-center gap-2 border-b border-gray-100 px-3">
-        <Sparkles size={15} className="text-indigo-600" />
+        <span className="grid h-5 w-5 place-items-center rounded brand-gradient text-[9px] font-bold text-white"><Sparkles size={11} /></span>
         <span className="text-xs font-semibold text-gray-800">开始</span>
-        <button className="ml-auto rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700" onClick={toggle} title="收起工作区"><ChevronLeft size={15} /></button>
+        <button className="ml-auto rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700" onClick={toggle} title="收起工作区"><ChevronLeft size={15} /></button>
       </div>
       <div className="space-y-1.5 border-b border-gray-100 p-2">
         {pages.length > 0 && (
-          <button className="flex h-8 w-full items-center justify-center gap-1.5 rounded bg-gray-900 text-xs font-medium text-white hover:bg-gray-800" onClick={() => { setActivePageId(pages[0].id); setView("design"); openStudio(); }}><Sparkles size={14} /> 继续编辑</button>
+          <button className="btn-brand flex h-8 w-full items-center justify-center gap-1.5 rounded text-xs font-medium text-white" onClick={() => { setActivePageId(pages[0].id); setView("design"); openStudio(); }}><Sparkles size={14} /> 继续编辑</button>
         )}
-        <button className={`flex h-8 w-full items-center justify-center gap-1.5 rounded text-xs font-medium ${pages.length ? "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50" : "bg-gray-900 text-white hover:bg-gray-800"}`} onClick={createBlankProject}><FilePlus2 size={14} /> 新建设计</button>
+        <button className={`flex h-8 w-full items-center justify-center gap-1.5 rounded text-xs font-medium transition-colors ${pages.length ? "border border-gray-200 bg-white text-gray-600 hover:border-indigo-300 hover:bg-indigo-50/40" : "btn-brand text-white"}`} onClick={createBlankProject}><FilePlus2 size={14} /> 新建设计</button>
       </div>
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="px-2 pt-2">
@@ -79,7 +79,7 @@ export function WorkspaceSidebar() {
         <div className="flex-1 overflow-y-auto p-2">
           <div className="space-y-1.5">
             {filtered.map((template) => (
-              <button key={template.id} className="flex w-full items-center gap-2 rounded border border-gray-200 p-2 text-left hover:border-indigo-300 hover:bg-indigo-50/40" onClick={() => { const id = instantiateTemplate(template); setActivePageId(id); setView("design"); openStudio(); toast.success(`已从模板创建项目：${template.name}`); }}>
+              <button key={template.id} className="card-lift flex w-full items-center gap-2 rounded-lg border border-gray-200 p-2 text-left hover:border-indigo-300 hover:bg-indigo-50/40" onClick={() => { const id = instantiateTemplate(template); setActivePageId(id); setView("design"); openStudio(); toast.success(`已从模板创建项目：${template.name}`); }}>
                 <TemplatePreview template={template} />
                 <span className="min-w-0 flex-1"><span className="block truncate text-[11px] font-medium text-gray-700">{template.name}</span><span className="block truncate text-[9px] text-gray-400">{template.description}</span></span>
                 <span className="text-[9px] text-gray-300">{template.category}</span>

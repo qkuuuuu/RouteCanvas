@@ -1,7 +1,4 @@
 import type { ComponentDef } from "@/types/schema";
-import { shadcnComponents } from "./components";
-
-export { shadcnComponents };
 
 const COLOR_OPTIONS = ["#6366f1", "#ec4899", "#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
 const textField = { key: "text", label: "文本", type: "string" as const, bucket: "base" as const };

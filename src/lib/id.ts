@@ -1,7 +1,7 @@
 // 带前缀的短 id 生成器：page_ / node_ / trans_
 // 优先用 crypto.randomUUID 截短，无则回退时间戳+随机数。
 
-const PREFIXES = ["page", "node", "trans", "canvas"] as const;
+const PREFIXES = ["page", "node", "trans", "canvas", "comment"] as const;
 export type IdPrefix = (typeof PREFIXES)[number];
 
 function rand(): string {
